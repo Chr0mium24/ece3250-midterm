@@ -116,40 +116,110 @@
   }
 
   /* ---------- 二参数区域 ---------- */
+  // 二参数：只需输入特征多项式，参数自动识别；范围、Routh 表、条件、边界全部自动给出
   const REGION_PRESETS = {
-    hw322: { e: 's*(1+t*s)*(1+2*s)+K*(s+2)', x: 'K', x0: 0, x1: 5, y: 't', y0: 0, y1: 6, curve: (K) => (K > 1 / 3 ? (2 * (1 + K)) / (3 * K - 1) : NaN), note: ['边界 τ = 2(1+K)/(3K−1)（红色虚线）；渐近线 K = 1/3、τ = 2/3。', 'Boundary τ = 2(1+K)/(3K−1) (red dashed); asymptotes K = 1/3, τ = 2/3.'] },
-    ka: { e: 's*(s+1)*(s+a)+K', x: 'a', x0: 0, x1: 5, y: 'K', y0: 0, y1: 25, curve: (a) => a * (1 + a), note: ['L = K/(s(s+1)(s+a))：c = s³+(1+a)s²+as+K，稳定 ⟺ a > 0, K > 0, K < a(1+a)（红色虚线）。', 'L = K/(s(s+1)(s+a)): c = s³+(1+a)s²+as+K, stable ⟺ a > 0, K > 0, K < a(1+a) (red dashed).'] },
-    pd: { e: 's*(s+1)*(s+2)+10*(KP+KD*s)', x: 'KD', x0: -0.5, x1: 2, y: 'KP', y0: -0.5, y1: 8, curve: (KD) => 0.3 * (2 + 10 * KD), note: ['PD 控制：c = s³+3s²+(2+10K_D)s+10K_P，稳定 ⟺ K_P > 0 且 K_P < 0.3(2+10K_D)（红色虚线）。', 'PD control: c = s³+3s²+(2+10K_D)s+10K_P, stable ⟺ K_P > 0 and K_P < 0.3(2+10K_D) (red dashed).'] },
-    pi: { e: 's*(s+1)*(s+2)+10*(KP*s+KI)', x: 'KI', x0: -0.5, x1: 2, y: 'KP', y0: -0.5, y1: 1.5, curve: (KI) => (KI > 0 ? KI / 3 - 0.2 : NaN), note: ['边界 K_P = K_I/3 − 0.2（红色虚线）与 K_I = 0。', 'Boundaries K_P = K_I/3 − 0.2 (red dashed) and K_I = 0.'] },
+    hw322: { e: 's*(1+t*s)*(1+2*s)+K*(s+2)', axes: ['K', 't'] },
+    pi: { e: 's*(s+1)*(s+2)+10*(KP*s+KI)', axes: ['KI', 'KP'] },
+    pd: { e: 's*(s+1)*(s+2)+10*(KP+KD*s)', axes: ['KD', 'KP'] },
+    ka: { e: 's*(s+1)*(s+a)+K', axes: ['a', 'K'] },
   };
-  let regionCurve = null, regionNote = null;
+  let regionAxes = null; // [横轴, 纵轴]；null = 按出现顺序
+  const texName = (v) => {
+    const n = CM.normName(v);
+    if (n === 't' || n === 'tau') return '\\tau';
+    const m = /^([A-Za-z])([A-Za-z0-9]+)$/.exec(n);
+    return m ? m[1] + '_{' + m[2] + '}' : n;
+  };
+  const plainName = (v) => (CM.normName(v) === 't' || CM.normName(v) === 'tau' ? 'τ' : v);
   function clearRegion() {
     const cv = $('rg-canvas'), ctx = cv.getContext('2d');
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
     cv.onmousemove = null; $('rg-read').textContent = '';
   }
+  const fracTeX = (e, names) => (e.den.isConst() && e.den.constVal().isOne() ? e.num.toTeX(names) : '\\dfrac{' + e.num.toTeX(names) + '}{' + e.den.toTeX(names) + '}');
+  function sTeX(mp, n, names) { // c(s) 按 s 的降幂整理
+    let out = '';
+    for (let k = n; k >= 0; k--) {
+      const c = mp.coef(0, k); if (c.isZero()) continue;
+      const sv = k === 0 ? '' : k === 1 ? 's' : 's^{' + k + '}';
+      let ct = c.toTeX(names);
+      if (c.terms().length > 1) ct = '(' + ct + ')';
+      else if (sv && ct === '1') ct = '';
+      else if (sv && ct === '-1') ct = '-';
+      out += (out && !ct.startsWith('-') ? '+' : '') + ct + (sv ? '\\,' + sv : '');
+    }
+    return out || '0';
+  }
+  function solvedTeX(g, names) { // 某个参数是一次的：解成 “参数 > / < 表达式”
+    if (g.isConst()) return null;
+    for (const iv of [1, 0]) {
+      if (g.deg(iv) !== 1) continue;
+      const A = g.coef(iv, 1), B = g.coef(iv, 0), other = [names[1 - iv]], v = names[iv];
+      if (B.isZero() && A.isConst()) return null; // 本来就是 v > 0 的形式
+      if (A.isConst()) {
+        const c = A.constVal(), rhs = B.scale(c.inv().neg());
+        return v + (c.sign() > 0 ? ' > ' : ' \\lt ') + rhs.toTeX(other);
+      }
+      // A·v + B > 0：A > 0 时 v > −B/A，A < 0 时 v < −B/A；把分母化成最高次项为正的形式
+      let N = B.neg(), Dn = A;
+      const top = Math.max(...Dn.terms().map(([e]) => e.reduce((x, y) => x + y, 0)));
+      if (!Dn.terms().some(([e, c]) => e.reduce((x, y) => x + y, 0) === top && c.sign() > 0)) { N = N.neg(); Dn = Dn.neg(); } // 同乘 −1，不等号方向随 Dn 的符号对调
+      const flip = !Dn.eq(A); // Dn = −A
+      const fr = '\\dfrac{' + N.toTeX(other) + '}{' + Dn.toTeX(other) + '}', dT = Dn.toTeX(other);
+      const whenPos = flip ? ' \\lt ' : ' > ', whenNeg = flip ? ' > ' : ' \\lt ';
+      return '\\begin{cases}' + v + whenPos + fr + ', & ' + dT + ' > 0\\\\ ' + v + whenNeg + fr + ', & ' + dT + ' \\lt 0\\end{cases}';
+    }
+    return null;
+  }
   function regionCalc() {
-    clearRegion(); // 先清空：出错时不能留着上一张图
-    const src = $('rg-in').value, xn = $('rg-x').value.trim(), yn = $('rg-y').value.trim();
-    const xr = [parseFloat($('rg-x0').value), parseFloat($('rg-x1').value)], yr = [parseFloat($('rg-y0').value), parseFloat($('rg-y1').value)];
-    if (!xn || !yn) throw new Error(bi('请填写横轴和纵轴的参数名', 'Enter the parameter names for both axes'));
-    if (CM.normName(xn) === CM.normName(yn)) throw new Error(bi('横轴和纵轴不能是同一个参数', 'The two axes must be different parameters'));
-    if ([xn, yn].some((v) => CM.normName(v) === 's')) throw new Error(bi('参数名不能是 s（s 是拉氏变量）', 'A parameter cannot be named s (the Laplace variable)'));
+    clearRegion(); // 出错时不留旧图
+    const src = $('rg-in').value;
+    const ids = CM.detectParams(src);
+    if (ids.length === 0) throw new Error(bi('表达式里没有参数；纯数值多项式请用上面的 ① Routh 计算器', 'No parameter found — use calculator ① for a numeric polynomial'));
+    if (ids.length === 1) throw new Error(bi('只有一个参数 ' + ids[0] + '：请用上面的 ① Routh 计算器（参数名填 ' + ids[0] + '）直接求区间', 'Only one parameter (' + ids[0] + '): use calculator ① with parameter ' + ids[0]));
+    if (ids.length > 2) throw new Error(bi('有 ' + ids.length + ' 个参数（' + ids.join(', ') + '），请把多余的代入数值，只留两个；如果是两个字母相乘请写成 P*I', ids.length + ' parameters (' + ids.join(', ') + ') — substitute numbers so only two remain; write products as P*I'));
+    if (!regionAxes || regionAxes.map(CM.normName).sort().join() !== ids.slice().sort().join()) regionAxes = ids.slice();
+    const [xn, yn] = regionAxes.map(CM.normName);
+    $('rg-axes').innerHTML = bi('横轴 ', 'x-axis ') + '<b>' + plainName(xn) + '</b>，' + bi('纵轴 ', 'y-axis ') + '<b>' + plainName(yn) + '</b>';
+    $('rg-xl').textContent = plainName(xn); $('rg-yl').textContent = plainName(yn);
+    const names = [texName(xn), texName(yn)];
+    const cond = CM.twoParamConditions(src, xn, yn);
+    const sys = CM.compileNum(src, [xn, yn]);
+    const stable = (x, y) => CM.routhFloat(sys.f({ [xn]: x, [yn]: y }));
+    // 范围：手动填了就用手动，否则自动
+    const num = (id) => { const v = $(id).value.trim(); return v === '' ? NaN : parseFloat(v); };
+    const auto = CM.autoWindow(cond.conds, stable);
+    const xr = [isFinite(num('rg-x0')) ? num('rg-x0') : auto.xr[0], isFinite(num('rg-x1')) ? num('rg-x1') : auto.xr[1]];
+    const yr = [isFinite(num('rg-y0')) ? num('rg-y0') : auto.yr[0], isFinite(num('rg-y1')) ? num('rg-y1') : auto.yr[1]];
     if (!(xr[1] > xr[0]) || !(yr[1] > yr[0])) throw new Error(bi('范围不对：右端要大于左端', 'Bad range: the upper end must exceed the lower end'));
-    const sys = CM.compileNum(src, [xn, yn]); // 只认这两个参数名，其它符号直接报错
-    const used = new Set(sys.ids);
-    const cv = $('rg-canvas');
-    const label = (v) => (CM.normName(v) === 't' || CM.normName(v) === 'tau' ? 'τ' : v);
-    const cnt = UI.regionPlot(cv, {
-      xr, yr, xl: label(xn), yl: label(yn), readout: $('rg-read'),
-      f: (x, y) => CM.routhFloat(sys.f({ [xn]: x, [yn]: y })),
-      curves: regionCurve ? [{ f: regionCurve }] : [],
+    const manual = ['rg-x0', 'rg-x1', 'rg-y0', 'rg-y1'].some((id) => $(id).value.trim() !== '');
+    const cnt = UI.regionPlot($('rg-canvas'), {
+      xr, yr, xl: plainName(xn), yl: plainName(yn), readout: $('rg-read'), f: stable,
+      contours: cond.conds.filter((g) => !g.isConst()).map((g) => (x, y) => g.evalF([x, y])),
     });
     let h = '';
-    const unused = [xn, yn].filter((v) => !used.has(CM.normName(v)));
-    if (unused.length) h += '<p class="small err">' + bi('注意：表达式里没有出现 ', 'Note: the expression does not contain ') + unused.join(', ') + bi('，这一轴方向上结果不变。', ' — the result is constant along that axis.') + '</p>';
-    if (regionNote) h += '<p class="small">' + bi(regionNote[0], regionNote[1]) + '</p>';
-    h += '<p class="muted small">' + bi('绿色 = 稳定（每个格点都单独做一次 Routh）。网格中稳定格点数：', 'Green = stable (Routh test at every grid point). Stable grid cells: ') + cnt + bi('。把鼠标移到图上查看坐标与判定。', '. Hover over the plot to read values.') + '</p>';
+    h += lbl('特征多项式', 'Characteristic polynomial') + disp('c(s)=' + sTeX(cond.mp, cond.n, names));
+    if (cond.flipped) h += '<p class="muted small">' + bi('首项为负，已整体乘 −1。', 'Leading coefficient negative — multiplied by −1.') + '</p>';
+    // 完整 Routh 表
+    h += lbl('Routh 表（按课件公式逐格计算并化简）', 'Routh table (slide formula, each entry simplified)');
+    h += '<div class="tbl-wrap"><table class="routh">';
+    cond.table.forEach((row, i) => {
+      h += '<tr><td class="row-h">' + T('s^{' + (cond.n - i) + '}') + '</td>' + row.map((e, j) => '<td class="' + (j === 0 ? 'first' : '') + '">' + T(fracTeX(e, names), false) + '</td>').join('') + '</tr>';
+    });
+    if (cond.stopAt) h += '<tr><td class="row-h">' + T('s^{' + (cond.n - cond.stopAt) + '}') + '</td><td class="badcell">' + bi('无法计算', 'undefined') + '</td></tr>';
+    h += '</table></div>';
+    if (cond.stopAt) h += verdict('bad', '第一列有一项恒为 0 ⟹ 对任何参数都不稳定', 'A first-column entry is identically 0 ⟹ unstable for all parameter values');
+    // 条件
+    h += lbl('稳定条件（第一列全 > 0；已乘掉前面已为正的分母）', 'Stability conditions (first column > 0; positive denominators cleared)');
+    const shown = cond.conds.filter((g) => !g.isConst());
+    if (!cond.a[0].isConst()) h += '<p class="muted small">' + bi('首项系数含参数，这里按首项 > 0 列条件（首项 < 0 时整列反号的情况图中也一并判断了）。', 'The leading coefficient depends on the parameters; conditions assume it is positive (the all-negative case is still tested in the plot).') + '</p>';
+    h += '<ol>' + shown.map((g) => { const sv = solvedTeX(g, names); return '<li>' + T(g.toTeX(names) + ' > 0') + (sv ? '　⟺　' + T(sv) : '') + '</li>'; }).join('') + '</ol>';
+    if (cond.never && !cond.stopAt) h += verdict('bad', '有一条条件恒不成立 ⟹ 对任何参数都不稳定', 'A condition can never hold ⟹ unstable for all parameter values');
+    // 范围说明
+    if (auto.empty && !manual) h += verdict('bad', '在搜索范围内没有找到稳定区域', 'No stable region found in the search range');
+    h += '<p class="muted small">' + (manual ? bi('手动范围', 'Manual range') : bi('自动范围（由条件的截距、渐近线和稳定区域位置确定；可在上方填数覆盖）', 'Automatic range (from intercepts, asymptotes and where the stable set lies; type numbers above to override)'))
+      + '：' + T(names[0] + '\\in[' + CM.fmtDec(xr[0], 4) + ',\\ ' + CM.fmtDec(xr[1], 4) + '],\\ ' + names[1] + '\\in[' + CM.fmtDec(yr[0], 4) + ',\\ ' + CM.fmtDec(yr[1], 4) + ']') + '</p>';
+    h += '<p class="muted small">' + bi('绿色 = 稳定（每个格点单独做 Routh），红线 = 稳定区域边界（条件取等号）。稳定格点数：', 'Green = stable (Routh at each grid point), red = boundary of the stable region (a condition = 0). Stable cells: ') + cnt + bi('。鼠标移到图上看坐标和判定。', '. Hover to read values.') + '</p>';
     return h;
   }
 
@@ -348,10 +418,20 @@
   function bind() {
     $('routh-go').onclick = () => run('routh-out', routhCalc);
     document.querySelectorAll('[data-routh]').forEach((bt) => bt.onclick = () => { const [e, p] = bt.dataset.routh.split('|'); $('routh-in').value = e; $('routh-param').value = p || ''; run('routh-out', routhCalc); });
-    let regionPreset = null;
-    const sameAsPreset = () => { const p = REGION_PRESETS[regionPreset]; return p && $('rg-in').value === p.e && $('rg-x').value.trim() === p.x && $('rg-y').value.trim() === p.y; };
-    $('rg-go').onclick = () => { if (!sameAsPreset()) { regionCurve = null; regionNote = null; regionPreset = null; } run('rg-out', regionCalc); };
-    const loadRegion = (k) => { const p = REGION_PRESETS[k]; if (!p) return; $('rg-in').value = p.e; $('rg-x').value = p.x; $('rg-x0').value = p.x0; $('rg-x1').value = p.x1; $('rg-y').value = p.y; $('rg-y0').value = p.y0; $('rg-y1').value = p.y1; regionCurve = p.curve; regionNote = p.note; regionPreset = k; run('rg-out', regionCalc); };
+    const clearRanges = () => ['rg-x0', 'rg-x1', 'rg-y0', 'rg-y1'].forEach((id) => { $(id).value = ''; });
+    $('rg-go').onclick = () => run('rg-out', regionCalc);
+    $('rg-swap').onclick = () => {
+      if (regionAxes) regionAxes = [regionAxes[1], regionAxes[0]];
+      const [a, b, c, d] = ['rg-x0', 'rg-x1', 'rg-y0', 'rg-y1'].map((id) => $(id).value);
+      $('rg-x0').value = c; $('rg-x1').value = d; $('rg-y0').value = a; $('rg-y1').value = b;
+      run('rg-out', regionCalc);
+    };
+    let lastIds = '';
+    $('rg-in').addEventListener('input', () => { // 参数变了就回到自动：清掉旧的轴顺序和手动范围
+      let ids = ''; try { ids = CM.detectParams($('rg-in').value).slice().sort().join(); } catch (e) { return; }
+      if (ids !== lastIds) { lastIds = ids; regionAxes = null; clearRanges(); }
+    });
+    const loadRegion = (k) => { const p = REGION_PRESETS[k]; if (!p) return; $('rg-in').value = p.e; regionAxes = p.axes.slice(); clearRanges(); try { lastIds = CM.detectParams(p.e).slice().sort().join(); } catch (e) { /* ignore */ } run('rg-out', regionCalc); };
     document.querySelectorAll('[data-region]').forEach((bt) => bt.onclick = () => loadRegion(bt.dataset.region));
     $('kh-go').onclick = () => run('kh-out', kharCalc);
     document.querySelectorAll('[data-kh]').forEach((bt) => bt.onclick = () => { $('kh-in').value = bt.dataset.kh; run('kh-out', kharCalc); });

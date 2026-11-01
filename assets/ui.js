@@ -314,6 +314,39 @@
       }
       ctx.stroke(); ctx.setLineDash([]); ctx.restore();
     });
+    // 自动边界：每个条件 g(x,y)=0 的等值线（marching squares），只画两侧稳定性不同的那一段
+    if (opt.contours && opt.contours.length) {
+      const NX = N, NYc = NY;
+      const gx = (i) => x0 + (i / NX) * (x1 - x0), gy = (j) => y1 - (j / NYc) * (y1 - y0);
+      const px = (i) => m.l + (i / NX) * pw, py = (j) => m.t + (j / NYc) * ph;
+      const test = (i, j) => { const x = gx(i), y = gy(j); if (x < x0 || x > x1 || y < y0 || y > y1) return null; try { return !!opt.f(x, y); } catch (e) { return null; } };
+      ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, pw, ph); ctx.clip();
+      ctx.strokeStyle = css('--red') || '#b3122e'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+      for (const g of opt.contours) {
+        const V = [];
+        for (let j = 0; j <= NYc; j++) { const row = new Float64Array(NX + 1); for (let i = 0; i <= NX; i++) { let v = NaN; try { v = g(gx(i), gy(j)); } catch (e) { v = NaN; } row[i] = v; } V.push(row); }
+        ctx.beginPath();
+        for (let j = 0; j < NYc; j++) for (let i = 0; i < NX; i++) {
+          const c = [[i, j, V[j][i]], [i + 1, j, V[j][i + 1]], [i + 1, j + 1, V[j + 1][i + 1]], [i, j + 1, V[j + 1][i]]];
+          if (c.some((q) => !isFinite(q[2]))) continue;
+          const pts = [];
+          for (let k = 0; k < 4; k++) {
+            const [ai, aj, av] = c[k], [bi, bj, bv] = c[(k + 1) % 4];
+            if ((av > 0) !== (bv > 0)) { const t = av / (av - bv); pts.push([ai + t * (bi - ai), aj + t * (bj - aj)]); }
+          }
+          for (let k = 0; k + 1 < pts.length; k += 2) {
+            const [p1, p2] = [pts[k], pts[k + 1]];
+            const mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
+            let nx = -(p2[1] - p1[1]), ny = p2[0] - p1[0]; const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+            const sA = test(mx + 1.2 * nx, my + 1.2 * ny), sB = test(mx - 1.2 * nx, my - 1.2 * ny);
+            if (sA === null || sB === null || sA === sB) continue; // 不是稳定区域的边界就不画
+            ctx.moveTo(px(p1[0]), py(p1[1])); ctx.lineTo(px(p2[0]), py(p2[1]));
+          }
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
     ctx.fillStyle = css('--ink') || '#222'; ctx.font = 'italic 14px "Times New Roman", serif';
     ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText(opt.xl || 'x', m.l + pw - 4, m.t + ph - 4);
     ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(opt.yl || 'y', m.l + 6, m.t + 4);

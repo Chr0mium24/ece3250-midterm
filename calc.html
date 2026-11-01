@@ -9,10 +9,10 @@
 <link rel="stylesheet" href="assets/style.css?v=4">
 <script defer src="assets/vendor/katex/katex.min.js"></script>
 <script defer src="assets/vendor/katex/auto-render.min.js"></script>
-<script defer src="assets/search-index.js?v=3"></script>
-<script defer src="assets/cmath.js?v=2"></script>
-<script defer src="assets/ui.js?v=3"></script>
-<script defer src="assets/calc.js?v=2"></script>
+<script defer src="assets/search-index.js?v=4"></script>
+<script defer src="assets/cmath.js?v=4"></script>
+<script defer src="assets/ui.js?v=4"></script>
+<script defer src="assets/calc.js?v=5"></script>
 </head>
 <body>
 <header id="topnav"></header>
@@ -56,12 +56,12 @@
 <!-- ② region -->
 <section class="calc" id="region-sec">
 <h2 id="region" data-kw="two parameter stability region plot pi controller tau K plane">② <span class="zh">二参数稳定区域</span><span class="en">Two-parameter stability region</span></h2>
-<p class="muted small"><span class="zh">输入任意含两个参数的闭环特征多项式（不限于下面的例题），在横轴、纵轴填这两个参数的名字和范围。参数名可以任取（如 <code>KC</code>、<code>KI</code>、<code>a</code>、<code>t</code>/<code>τ</code>、<code>K_1</code>），但必须和表达式里写的一致；其它常数请直接代入数值。程序在网格上逐点做 Routh，绿色为稳定。</span><span class="en">Enter any closed-loop characteristic polynomial with two parameters (not just the examples) and give their names and ranges on the two axes. Names are free (<code>KC</code>, <code>KI</code>, <code>a</code>, <code>t</code>/<code>τ</code>, <code>K_1</code>…) but must match the expression; substitute all other constants as numbers. Routh is run at every grid point, green = stable.</span></p>
+<p class="muted small"><span class="zh">只需输入含两个参数的闭环特征多项式（不限于例题，参数名随意，如 <code>P</code>、<code>I</code>、<code>KC</code>、<code>a</code>、<code>t</code>/<code>τ</code>），程序会自动识别两个参数，列出完整 Routh 表和稳定条件，自动选择作图范围并画出边界。两个参数相乘请写 <code>P*I</code>。</span><span class="en">Just type the closed-loop characteristic polynomial with two parameters (any names such as <code>P</code>, <code>I</code>, <code>KC</code>, <code>a</code>, <code>t</code>/<code>τ</code>). The parameters are detected automatically; the full Routh table, the stability conditions, the plot range and the boundary are all derived for you. Write products of two parameters as <code>P*I</code>.</span></p>
 <div class="presets"><span><span class="zh">例题：</span><span class="en">Examples:</span></span><button data-region="hw322">HW2 3.22 (K, τ)</button><button data-region="pi">L11 PI (K_I, K_P)</button><button data-region="pd">PD (K_D, K_P)</button><button data-region="ka">K/(s(s+1)(s+a)) (a, K)</button></div>
 <div class="form">
-<label for="rg-in">c(s) =</label><input type="text" id="rg-in" value="s*(1+t*s)*(1+2*s)+K*(s+2)">
-<label><span class="zh">横轴</span><span class="en">x-axis</span></label><div class="row"><input type="text" id="rg-x" class="short" value="K"><input type="text" id="rg-x0" class="short" value="0"><span>→</span><input type="text" id="rg-x1" class="short" value="5"></div>
-<label><span class="zh">纵轴</span><span class="en">y-axis</span></label><div class="row"><input type="text" id="rg-y" class="short" value="t"><input type="text" id="rg-y0" class="short" value="0"><span>→</span><input type="text" id="rg-y1" class="short" value="6"><button class="primary" id="rg-go"><span class="zh">绘制</span><span class="en">Plot</span></button></div>
+<label for="rg-in">c(s) =</label><div class="row"><input type="text" id="rg-in" value="s*(1+t*s)*(1+2*s)+K*(s+2)"><button class="primary" id="rg-go"><span class="zh">分析并绘制</span><span class="en">Analyze &amp; plot</span></button></div>
+<label><span class="zh">坐标轴</span><span class="en">Axes</span></label><div class="row"><span id="rg-axes" class="muted small"><span class="zh">（自动识别）</span><span class="en">(auto)</span></span><button id="rg-swap"><span class="zh">⇄ 交换横纵轴</span><span class="en">⇄ Swap axes</span></button></div>
+<label><span class="zh">范围（可选）</span><span class="en">Range (optional)</span></label><div class="row"><span id="rg-xl" class="small">x</span><input type="text" id="rg-x0" class="short" placeholder="auto"><span>→</span><input type="text" id="rg-x1" class="short" placeholder="auto"><span id="rg-yl" class="small">y</span><input type="text" id="rg-y0" class="short" placeholder="auto"><span>→</span><input type="text" id="rg-y1" class="short" placeholder="auto"></div>
 </div>
 <canvas class="region" id="rg-canvas"></canvas>
 <div class="readout" id="rg-read"></div>

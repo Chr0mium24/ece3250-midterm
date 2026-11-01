@@ -298,12 +298,12 @@
   // 标识符切词：一串字母数字（如 KCs、2Ks 里的 Ks）按“已声明的名字 + s”做最长匹配拆开，
   // 这样 Ks = K·s，而声明过的 KC 不会被拆成 K·C。known = 允许出现的参数名（不含 s）。
   const normName = (v) => String(v).replace(/τ/g, 'tau').replace(/_/g, '');
-  function tokenize(src, known = [], svar = 's') {
+  function tokenize(src, known = [], svar = 's') { // known === null：自动识别参数名
     let s = String(src)
       .replace(/[−–—]/g, '-').replace(/[·×∙]/g, '*').replace(/÷/g, '/')
       .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/⁵/g, '^5')
       .replace(/\*\*/g, '^');
-    const names = [...new Set([svar, ...known.map(normName)])].filter(Boolean).sort((a, b) => b.length - a.length);
+    const names = [...new Set([svar, ...(known || []).map(normName)])].filter(Boolean).sort((a, b) => b.length - a.length);
     const toks = []; let i = 0;
     while (i < s.length) {
       const ch = s[i];
@@ -316,6 +316,15 @@
       if (/[A-Za-zα-ωΑ-Ω_]/.test(ch)) {
         const raw = /^[A-Za-zα-ωΑ-Ω_][A-Za-zα-ωΑ-Ω0-9_]*/.exec(s.slice(i))[0];
         const run = normName(raw);
+        if (known === null) { // 自动识别：去掉开头/结尾的 s，中间整体当一个参数名
+          let a = 0, b = run.length;
+          while (b - a > 1 && run[a] === svar) { toks.push({ t: 'id', v: svar }); a++; }
+          let tail = 0; while (b - a > 1 && run[b - 1] === svar) { b--; tail++; }
+          const mid = run.slice(a, b);
+          if (/^\d+$/.test(mid)) toks.push({ t: 'num', v: mid }); else toks.push({ t: 'id', v: mid });
+          for (let k2 = 0; k2 < tail; k2++) toks.push({ t: 'id', v: svar });
+          i += raw.length; continue;
+        }
         let k = 0;
         while (k < run.length) {
           const dm = /^\d+/.exec(run.slice(k));
@@ -882,6 +891,210 @@
     return { s: join(sTerms), t: join(tTerms) };
   }
 
+  /* ---------------- 多元多项式（两参数稳定区域用） ---------------- */
+  // Map<'e0,e1,..', Q>；nv 个变量
+  class MP {
+    constructor(nv, m) { this.nv = nv; this.m = m || new Map(); }
+    static c(nv, q) { q = Q.of(q); const m = new Map(); if (!q.isZero()) m.set(new Array(nv).fill(0).join(','), q); return new MP(nv, m); }
+    static v(nv, i) { const e = new Array(nv).fill(0); e[i] = 1; return new MP(nv, new Map([[e.join(','), Q.ONE]])); }
+    isZero() { return this.m.size === 0; }
+    terms() { return [...this.m].map(([k, v]) => [k.split(',').map(Number), v]); }
+    put(m, k, v) { const s0 = (m.get(k) || Q.ZERO).add(v); if (s0.isZero()) m.delete(k); else m.set(k, s0); }
+    add(o) { const m = new Map(this.m); for (const [k, v] of o.m) this.put(m, k, v); return new MP(this.nv, m); }
+    neg() { return new MP(this.nv, new Map([...this.m].map(([k, v]) => [k, v.neg()]))); }
+    sub(o) { return this.add(o.neg()); }
+    scale(q) { q = Q.of(q); if (q.isZero()) return new MP(this.nv); return new MP(this.nv, new Map([...this.m].map(([k, v]) => [k, v.mul(q)]))); }
+    mul(o) {
+      const m = new Map();
+      for (const [e1, v1] of this.terms()) for (const [e2, v2] of o.terms()) this.put(m, e1.map((x, i) => x + e2[i]).join(','), v1.mul(v2));
+      return new MP(this.nv, m);
+    }
+    deg(i) { let d = -1; for (const [e] of this.terms()) d = Math.max(d, e[i]); return d; }
+    isConst() { return this.terms().every(([e]) => e.every((x) => x === 0)); }
+    constVal() { return this.isZero() ? Q.ZERO : this.m.get(new Array(this.nv).fill(0).join(',')) || Q.ZERO; }
+    lead() { // 字典序首项
+      let best = null;
+      for (const [e, v] of this.terms()) if (!best || cmpLex(e, best[0]) > 0) best = [e, v];
+      return best;
+    }
+    divExact(o) { // 整除则返回商，否则 null
+      if (o.isZero()) return null;
+      const [le, lc] = o.lead();
+      let r = this, q = new MP(this.nv);
+      for (let guard = 0; !r.isZero(); guard++) {
+        if (guard > 5000) return null;
+        const [re, rc] = r.lead();
+        if (re.some((x, i) => x < le[i])) return null;
+        const t = new MP(this.nv, new Map([[re.map((x, i) => x - le[i]).join(','), rc.div(lc)]]));
+        q = q.add(t); r = r.sub(t.mul(o));
+      }
+      return q;
+    }
+    evalF(vals) { let s0 = 0; for (const [e, v] of this.terms()) { let t = v.toNumber(); e.forEach((k, i) => { if (k) t *= Math.pow(vals[i], k); }); s0 += t; } return s0; }
+    // 只保留第 i 个变量的 k 次项，并把该变量去掉 → 剩余变量的 MP
+    coef(i, k) {
+      const m = new Map();
+      for (const [e, v] of this.terms()) if (e[i] === k) { const e2 = e.filter((_, j) => j !== i); m.set(e2.join(','), v); }
+      return new MP(this.nv - 1, m);
+    }
+    // 单变量 MP → 升幂 Q 数组
+    toP() { const a = []; for (const [e, v] of this.terms()) { a[e[0]] = (a[e[0]] || Q.ZERO).add(v); } for (let i = 0; i < a.length; i++) if (!a[i]) a[i] = Q.ZERO; return P.trim(a); }
+    // 正数倍缩放成整系数、去公因子（不改变正负号）
+    primitive() {
+      if (this.isZero()) return this;
+      let l = 1n; for (const [, v] of this.terms()) l = (l * v.d) / bgcd(l, v.d);
+      let g = 0n; for (const [, v] of this.terms()) g = bgcd(g, v.n * (l / v.d));
+      return this.scale(new Q(l, g || 1n));
+    }
+    eq(o) { return this.sub(o).isZero(); }
+    toTeX(names) {
+      const ts = this.terms().sort((a, b) => {
+        const da = a[0].reduce((x, y) => x + y, 0), db = b[0].reduce((x, y) => x + y, 0);
+        return db - da || (b[1].sign() - a[1].sign()) || cmpLex(b[0], a[0]); // 同次项里正系数排前面
+      });
+      if (!ts.length) return '0';
+      let out = '';
+      for (const [e, v] of ts) {
+        const neg = v.sign() < 0, ab = v.abs();
+        const mono = e.map((k, i) => (k === 0 ? '' : '{' + names[i] + '}' + (k === 1 ? '' : '^{' + k + '}'))).join(''); // 花括号：\tau 后面接 K 或 s 也不会粘成一个命令
+        let cs = ab.isOne() && mono ? '' : qTeX(ab);
+        if (cs.includes('\\times')) cs = '(' + cs + ')';
+        out += (out ? (neg ? ' - ' : ' + ') : (neg ? '-' : '')) + cs + (cs && mono && /\d$/.test(cs) ? '' : '') + mono;
+      }
+      return out;
+    }
+  }
+  function normFrac(num, den) { // 分子分母同乘/除正数：整系数、去公因子；常数分母取正
+    let l = 1n; for (const x of [num, den]) for (const [, v] of x.terms()) l = (l * v.d) / bgcd(l, v.d);
+    let g = 0n; for (const x of [num, den]) for (const [, v] of x.terms()) g = bgcd(g, v.n * (l / v.d));
+    const k = new Q(l, g || 1n); num = num.scale(k); den = den.scale(k);
+    if (den.isConst() && den.constVal().sign() < 0) { num = num.neg(); den = den.neg(); }
+    return { num, den };
+  }
+  function cmpLex(a, b) { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; }
+  function evalMP(tree, vars) { // vars[0] 是 s
+    const nv = vars.length;
+    const ev = (t) => {
+      switch (t.k) {
+        case 'num': return MP.c(nv, Q.parse(t.v));
+        case 'id': { const i = vars.indexOf(t.v); if (i < 0) throw new Error('未知符号 / unknown symbol “' + t.v + '”'); return MP.v(nv, i); }
+        case 'neg': return ev(t.a).neg();
+        case '+': return ev(t.a).add(ev(t.b));
+        case '-': return ev(t.a).sub(ev(t.b));
+        case '*': return ev(t.a).mul(ev(t.b));
+        case '/': { const b = ev(t.b); if (!b.isConst() || b.isZero()) throw new Error('除法只允许除以非零常数 / only division by nonzero constants'); return ev(t.a).scale(b.constVal().inv()); }
+        case '^': { let r = MP.c(nv, 1); const b = ev(t.a); for (let i = 0; i < t.n; i++) r = r.mul(b); return r; }
+      }
+      throw new Error('内部错误 / internal error');
+    };
+    return ev(tree);
+  }
+  // 自动识别表达式里除 s 以外的参数名（按出现顺序）
+  function detectParams(src, svar = 's') {
+    const ids = [];
+    (function walk(t) { if (t.k === 'id' && t.v !== svar && !ids.includes(t.v)) ids.push(t.v); if (t.a) walk(t.a); if (t.b) walk(t.b); })(parse(src, null, svar));
+    return ids;
+  }
+  // 两参数特征多项式 → 完整 Routh 表（按课件公式，每格化简）+ 稳定条件
+  // 用无分数递推：R_{i,j} = (R_{i-1,0}R_{i-2,j+1} - R_{i-2,0}R_{i-1,j+1}) / Δ_{i-3}（整除），
+  // 课件表中的元素 r_{i,j} = R_{i,j} / Δ_{i-1}，其中 Δ_m = R_{m,0}（m ≥ 1），Δ_0 = Δ_{-1} = 1。
+  function twoParamConditions(src, xn, yn) {
+    const vars = ['s', normName(xn), normName(yn)];
+    const mp = evalMP(parse(src, [xn, yn]), vars);
+    const n = mp.deg(0);
+    if (n < 1) throw new Error('c(s) 至少要一阶 / c(s) must have degree ≥ 1');
+    let a = []; for (let k = 0; k <= n; k++) a.push(mp.coef(0, n - k)); // a[0] 为首项系数
+    let flipped = false;
+    if (a[0].isConst() && a[0].constVal().sign() < 0) { a = a.map((c) => c.neg()); flipped = true; }
+    const zero = new MP(2), one = MP.c(2, 1);
+    const len = (i) => Math.floor((n - i) / 2) + 1;
+    const R = [a.filter((_, k) => k % 2 === 0)];
+    if (n >= 1) R.push(a.filter((_, k) => k % 2 === 1));
+    const get = (i, j) => (R[i] && j < R[i].length ? R[i][j] : zero);
+    const Delta = (m) => (m <= 0 ? one : R[m][0]);
+    let stopAt = null;
+    for (let i = 2; i <= n; i++) {
+      const piv = get(i - 1, 0);
+      if (piv.isZero()) { stopAt = i; break; }
+      const row = [];
+      for (let j = 0; j < len(i); j++) {
+        const num = piv.mul(get(i - 2, j + 1)).sub(get(i - 2, 0).mul(get(i - 1, j + 1)));
+        const q = num.divExact(Delta(i - 3));
+        if (!q) throw new Error('内部错误：无分数 Routh 递推不整除 / internal error in fraction-free Routh');
+        row.push(q);
+      }
+      R.push(row);
+    }
+    // 稳定条件：r_{k,0} > 0 ⟺（前面条件成立时）Δ_k > 0；去掉已知为正的因子再化成整系数
+    const conds = [];
+    const addCond = (g) => {
+      for (let m = conds.length - 1; m >= 0; m--) { const c = conds[m]; let q; while (!c.isConst() && (q = g.divExact(c))) g = q; }
+      g = g.primitive();
+      if (g.isConst()) { if (g.constVal().sign() <= 0) conds.push(g); return; }
+      if (!conds.some((c) => c.eq(g))) conds.push(g);
+    };
+    if (!a[0].isConst()) addCond(a[0]);
+    for (let k = 1; k < R.length; k++) {
+      let g = Delta(k);
+      for (let m = k - 1; m >= 1; m--) { let qq; while (!Delta(m).isConst() && (qq = g.divExact(Delta(m)))) g = qq; }
+      addCond(g);
+    }
+    // 课件形式的表：r_{i,j} = R_{i,j} / Δ_{i-1}，尽量约分
+    const cands = () => [...conds.filter((c) => !c.isConst()), ...R.slice(1).map((r) => r[0]).filter((d) => !d.isConst())];
+    const table = R.map((row, i) => row.map((Rij) => {
+      if (i === 0) return { num: Rij, den: one };
+      let num = Rij, den = Delta(i - 1);
+      if (!den.isConst()) { // 分母含参数：能整除就化成多项式，否则约去已知公因子
+        const q = num.divExact(den);
+        if (q) return normFrac(q, one);
+        for (const c of cands()) { let q1, q2; while ((q1 = num.divExact(c)) && (q2 = den.divExact(c))) { num = q1; den = q2; } }
+      }
+      return normFrac(num, den); // 分母是常数时保留课件的分数写法，如 (30P − I + 6)/3
+    }));
+    const never = conds.some((g) => g.isConst()) || stopAt !== null;
+    return { mp, n, a, R, table, stopAt, conds, flipped, never, names: vars.slice(1) };
+  }
+  // 由条件找特征点（截距、渐近线），再结合稳定性扫描定出合适的作图窗口
+  function autoWindow(conds, stable) {
+    const Fx = [0], Fy = [0];
+    const realRoots = (p) => { p = P.trim(p); if (P.deg(p) < 1) return []; return rootsNum(P.toDesc(p).map((c) => c.toNumber())).filter((r) => r[1] === 0).map((r) => r[0]); };
+    const leadQ = (p) => P.lead(p);
+    for (const g of conds) {
+      if (g.isConst()) continue;
+      Fx.push(...realRoots(g.coef(1, 0).toP())); // y = 0
+      Fy.push(...realRoots(g.coef(0, 0).toP())); // x = 0
+      if (g.deg(1) === 1) { const Ay = g.coef(1, 1).toP(), By = g.coef(1, 0).toP(); Fx.push(...realRoots(Ay)); if (P.deg(Ay) >= 1 && P.deg(Ay) === P.deg(By)) Fy.push(leadQ(By).div(leadQ(Ay)).neg().toNumber()); }
+      if (g.deg(0) === 1) { const Ax = g.coef(0, 1).toP(), Bx = g.coef(0, 0).toP(); Fy.push(...realRoots(Ax)); if (P.deg(Ax) >= 1 && P.deg(Ax) === P.deg(Bx)) Fx.push(leadQ(Bx).div(leadQ(Ax)).neg().toNumber()); }
+    }
+    const L = (F) => { const m = Math.max(...F.filter((v) => isFinite(v) && Math.abs(v) < 1e6).map(Math.abs)); return m > 1e-9 ? m : 1; };
+    const Lx = L(Fx), Ly = L(Fy);
+    const N = 100;
+    let found = null, sc = 1;
+    for (sc of [1, 10, 100]) {
+      const X0 = -4 * Lx * sc, X1 = 4 * Lx * sc, Y0 = -4 * Ly * sc, Y1 = 4 * Ly * sc;
+      let i0 = N, i1 = -1, j0 = N, j1 = -1;
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+        const x = X0 + ((i + 0.5) / N) * (X1 - X0), y = Y0 + ((j + 0.5) / N) * (Y1 - Y0);
+        let st = false; try { st = stable(x, y); } catch (e) { st = false; }
+        if (st) { i0 = Math.min(i0, i); i1 = Math.max(i1, i); j0 = Math.min(j0, j); j1 = Math.max(j1, j); }
+      }
+      if (i1 >= 0) { found = { X0, X1, Y0, Y1, i0, i1, j0, j1 }; break; }
+    }
+    if (!found) return { xr: [-2 * Lx, 2 * Lx], yr: [-2 * Ly, 2 * Ly], empty: true };
+    const f = found, cx = (f.X1 - f.X0) / N, cy = (f.Y1 - f.Y0) / N;
+    let x0 = f.i0 === 0 ? -2.5 * Lx * sc : f.X0 + f.i0 * cx, x1 = f.i1 === N - 1 ? 2.5 * Lx * sc : f.X0 + (f.i1 + 1) * cx;
+    let y0 = f.j0 === 0 ? -2.5 * Ly * sc : f.Y0 + f.j0 * cy, y1 = f.j1 === N - 1 ? 2.5 * Ly * sc : f.Y0 + (f.j1 + 1) * cy;
+    const fin = (lo, hi, Lm) => {
+      if (!(hi > lo)) { lo -= Lm; hi += Lm; }
+      let sp = hi - lo; lo -= 0.1 * sp; hi += 0.1 * sp; sp = hi - lo;
+      if (lo > 0 && lo <= 0.4 * sp) lo = -0.06 * sp; // 把坐标轴 0 也框进来
+      if (hi < 0 && -hi <= 0.4 * sp) hi = 0.06 * sp;
+      const q = Math.pow(10, Math.floor(Math.log10(hi - lo)) - 1);
+      return [Math.floor(lo / q) * q, Math.ceil(hi / q) * q];
+    };
+    return { xr: fin(x0, x1, Lx), yr: fin(y0, y1, Ly), features: { Fx, Fy } };
+  }
+
   /* ---------------- 精确优先的求根（带重数） ---------------- */
   // 返回 [{re, im, mult, tex}]，复根只列 im>0 的一个（tex 写成 a±jb），实根各一项
   function rootsExact(poly) {
@@ -931,7 +1144,7 @@
 
   /* ---------------- 导出 ---------------- */
   const CM = {
-    Q, P, RF, SK, C, parse, normName, polyS, polySK, compileNum, idsIn,
+    Q, P, RF, SK, C, MP, normFrac, parse, normName, detectParams, evalMP, twoParamConditions, autoWindow, polyS, polySK, compileNum, idsIn,
     routhQ, routhFloat, routhParam, kharitonov, KH_PAT, solveQ, polesToPoly, toeplitz, polePlace,
     parseMatrix, Mx, ss2tf, realizations, matTeX, partialFractions, pfTeX,
     rootsNum, rootsTeX, rootTeX, sortRoots, realRootsExact, rootsExact, rootsQ, rootsExactTeX,
