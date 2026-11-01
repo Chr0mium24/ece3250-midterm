@@ -6,12 +6,12 @@
 <title>作业 Homework · ECE3250 期中速成</title>
 <script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
 <link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=1">
+<link rel="stylesheet" href="assets/style.css?v=4">
 <script defer src="assets/vendor/katex/katex.min.js"></script>
 <script defer src="assets/vendor/katex/auto-render.min.js"></script>
-<script defer src="assets/search-index.js?v=1"></script>
+<script defer src="assets/search-index.js?v=2"></script>
 <script defer src="assets/cmath.js?v=1"></script>
-<script defer src="assets/ui.js?v=1"></script>
+<script defer src="assets/ui.js?v=3"></script>
 </head>
 <body>
 <header id="topnav"></header>
@@ -132,8 +132,8 @@ $$CT^{-1}(sI-TAT^{-1})^{-1}TB+D=C(sI-A)^{-1}B+D$$
 <p class="en">A zero appears and the $s^0$ row cannot be computed ⟹ <b>not stable</b>. Indeed $p_2=(s^2+4)(s+1)(s+2)^2$ has roots $\pm2j$ on the imaginary axis.</p>
 <p><b>(c)</b></p>
 <div class="tbl-wrap"><table class="routh"><tr><td class="row-h">$s^3$</td><td>1</td><td>$3K$</td></tr><tr><td class="row-h">$s^2$</td><td>$2K+1$</td><td>5</td></tr><tr><td class="row-h">$s^1$</td><td>$\dfrac{3K(2K+1)-5}{2K+1}=\dfrac{6K^2+3K-5}{2K+1}$</td><td></td></tr><tr><td class="row-h">$s^0$</td><td>5</td><td></td></tr></table></div>
-<p class="zh">需要 $2K+1>0$ 且 $6K^2+3K-5>0$。后者的根 $K=\frac{-3\pm\sqrt{129}}{12}$，即 $K<-1.1965$ 或 $K>0.6965$。与 $K>-\frac12$ 取交集：</p>
-<p class="en">Need $2K+1>0$ and $6K^2+3K-5>0$. The roots of the latter are $K=\frac{-3\pm\sqrt{129}}{12}$, i.e. $K<-1.1965$ or $K>0.6965$. Intersect with $K>-\frac12$:</p>
+<p class="zh">需要 $2K+1>0$ 且 $6K^2+3K-5>0$。后者的根 $K=\frac{-3\pm\sqrt{129}}{12}$，即 $K\lt -1.1965$ 或 $K>0.6965$。与 $K>-\frac12$ 取交集：</p>
+<p class="en">Need $2K+1>0$ and $6K^2+3K-5>0$. The roots of the latter are $K=\frac{-3\pm\sqrt{129}}{12}$, i.e. $K\lt -1.1965$ or $K>0.6965$. Intersect with $K>-\frac12$:</p>
 $$\boxed{K>\frac{-3+\sqrt{129}}{12}\approx0.6965}$$
 <a class="btn calc" href="calc.html?routh=s%5E3%2B(2K%2B1)s%5E2%2B3Ks%2B5&param=K#routh"><span class="zh">计算器：含参 Routh</span><span class="en">Calculator: parametric Routh</span></a>
 </div></details>
@@ -148,7 +148,7 @@ $$P(s)=\frac{s^2+15}{s^3+s^2+10s+5},\qquad C(s)=K$$
 <li><span class="zh"><b>前提</b>：$P$ strictly proper，$C$ proper ⟹ $1+P(\infty)C(\infty)=1\ne0$，适定。$b=s^2+15$ 的根 $\pm j\sqrt{15}$ 代入 $a(s)$ 得 $-10-5\sqrt{15}j\ne0$ ⟹ $a,b$ 互质。</span><span class="en"><b>Preconditions</b>: $P$ strictly proper, $C$ proper ⟹ $1+P(\infty)C(\infty)=1\ne0$, well-posed. Plugging the roots $\pm j\sqrt{15}$ of $b$ into $a$ gives $-10-5\sqrt{15}j\ne0$ ⟹ $a,b$ coprime.</span></li>
 <li><span class="zh"><b>特征多项式</b>（$p=1,\ q=K$）：</span><span class="en"><b>Characteristic polynomial</b> ($p=1,\ q=K$):</span> $c(s)=s^3+s^2+10s+5+K(s^2+15)=s^3+(1+K)s^2+10s+(5+15K)$</li>
 <li><b>Routh</b>：$s^3$: $1,\ 10$；$s^2$: $1+K,\ 5+15K$；$s^1$: $\dfrac{10(1+K)-(5+15K)}{1+K}=\dfrac{5(1-K)}{1+K}$；$s^0$: $5+15K$。</li>
-<li><span class="zh"><b>条件</b>：$1+K>0$，$1-K>0$，$5+15K>0$ ⟹</span><span class="en"><b>Conditions</b>: $1+K>0$, $1-K>0$, $5+15K>0$ ⟹</span> $$\boxed{-\tfrac13<K<1}$$</li>
+<li><span class="zh"><b>条件</b>：$1+K>0$，$1-K>0$，$5+15K>0$ ⟹</span><span class="en"><b>Conditions</b>: $1+K>0$, $1-K>0$, $5+15K>0$ ⟹</span> $$\boxed{-\tfrac13\lt K\lt 1}$$</li>
 </ol>
 <a class="btn calc" href="calc.html?routh=s%5E3%2Bs%5E2%2B10s%2B5%2BK(s%5E2%2B15)&param=K#routh"><span class="zh">计算器验证</span><span class="en">Verify</span></a>
 </div></details>
@@ -186,15 +186,15 @@ $$L(s)=\frac{K(s+2)}{s(1+\tau s)(1+2s)}\qquad(\text{unity negative feedback})$$
 <p class="en"><b>Characteristic polynomial</b>: $s(1+\tau s)(1+2s)+K(s+2)=0$ with $s(1+\tau s)(1+2s)=2\tau s^3+(\tau+2)s^2+s$:</p>
 $$c(s)=2\tau s^3+(\tau+2)s^2+(1+K)s+2K$$
 <div class="tbl-wrap"><table class="routh"><tr><td class="row-h">$s^3$</td><td>$2\tau$</td><td>$1+K$</td></tr><tr><td class="row-h">$s^2$</td><td>$\tau+2$</td><td>$2K$</td></tr><tr><td class="row-h">$s^1$</td><td>$\dfrac{(\tau+2)(1+K)-4\tau K}{\tau+2}$</td><td></td></tr><tr><td class="row-h">$s^0$</td><td>$2K$</td><td></td></tr></table></div>
-<p class="zh">（$\tau$ 是时间常数，取 $\tau>0$；可以验证 $\tau<0$ 时第一列不可能同号。）条件：</p>
-<p class="en">($\tau$ is a time constant, so $\tau>0$; one can check that for $\tau<0$ the first column can never have a single sign.) Conditions:</p>
+<p class="zh">（$\tau$ 是时间常数，取 $\tau>0$；可以验证 $\tau\lt 0$ 时第一列不可能同号。）条件：</p>
+<p class="en">($\tau$ is a time constant, so $\tau>0$; one can check that for $\tau\lt 0$ the first column can never have a single sign.) Conditions:</p>
 $$\tau>0,\qquad K>0,\qquad (\tau+2)(1+K)-4\tau K>0\iff \tau(1-3K)+2(1+K)>0$$
 <ul>
-<li class="zh">$0<K\le\frac13$：对所有 $\tau>0$ 都稳定。</li><li class="en">$0<K\le\frac13$: stable for every $\tau>0$.</li>
-<li class="zh">$K>\frac13$：$\tau<\dfrac{2(1+K)}{3K-1}$。边界曲线过 $(1,2)$、$(2,1.2)$、$(3,1)$，$K\to\frac13^+$ 时 $\tau\to\infty$，$K\to\infty$ 时 $\tau\to\frac23$。</li>
-<li class="en">$K>\frac13$: $\tau<\dfrac{2(1+K)}{3K-1}$. The boundary passes through $(1,2)$, $(2,1.2)$, $(3,1)$, with $\tau\to\infty$ as $K\to\frac13^+$ and $\tau\to\frac23$ as $K\to\infty$.</li>
-<li class="zh">等价写法：$\tau\le\frac23$ 时只需 $K>0$；$\tau>\frac23$ 时 $0<K<\dfrac{\tau+2}{3\tau-2}$。</li>
-<li class="en">Equivalently: for $\tau\le\frac23$ only $K>0$ is needed; for $\tau>\frac23$, $0<K<\dfrac{\tau+2}{3\tau-2}$.</li>
+<li class="zh">$0\lt K\le\frac13$：对所有 $\tau>0$ 都稳定。</li><li class="en">$0\lt K\le\frac13$: stable for every $\tau>0$.</li>
+<li class="zh">$K>\frac13$：$\tau\lt \dfrac{2(1+K)}{3K-1}$。边界曲线过 $(1,2)$、$(2,1.2)$、$(3,1)$，$K\to\frac13^+$ 时 $\tau\to\infty$，$K\to\infty$ 时 $\tau\to\frac23$。</li>
+<li class="en">$K>\frac13$: $\tau\lt \dfrac{2(1+K)}{3K-1}$. The boundary passes through $(1,2)$, $(2,1.2)$, $(3,1)$, with $\tau\to\infty$ as $K\to\frac13^+$ and $\tau\to\frac23$ as $K\to\infty$.</li>
+<li class="zh">等价写法：$\tau\le\frac23$ 时只需 $K>0$；$\tau>\frac23$ 时 $0\lt K\lt \dfrac{\tau+2}{3\tau-2}$。</li>
+<li class="en">Equivalently: for $\tau\le\frac23$ only $K>0$ is needed; for $\tau>\frac23$, $0\lt K\lt \dfrac{\tau+2}{3\tau-2}$.</li>
 </ul>
 <canvas class="region" id="hw322plot"></canvas>
 <div class="readout" id="hw322read"></div>

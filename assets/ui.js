@@ -330,9 +330,20 @@
     return count;
   }
 
+  // 比所在段落还宽的行内公式：单独给它横向滚动，不撑破版面
+  function markWide() {
+    document.querySelectorAll('main .katex:not(.katex-display .katex)').forEach((k) => {
+      k.classList.remove('wide');
+      const host = k.parentElement && k.parentElement.closest('p, li, td, div, summary');
+      if (host && host.clientWidth && k.getBoundingClientRect().width > host.clientWidth - 4) k.classList.add('wide');
+    });
+  }
+
   window.UI = { tex, renderMath, regionPlot, PAGES, bi, setLang, getLang, search, goTo };
   document.addEventListener('DOMContentLoaded', () => {
     buildNav(); buildToc(); wireToolbar(); renderMath(document.querySelector('main') || document.body);
+    markWide(); window.addEventListener('resize', markWide);
+    document.addEventListener('toggle', markWide, true);
     if (location.hash) setTimeout(() => goTo(decodeURIComponent(location.hash.slice(1))), 60);
     document.body.dataset.ready = '1';
   });

@@ -6,11 +6,11 @@
 <title>题目处理 Problem types · ECE3250 期中速成</title>
 <script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
 <link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=1">
+<link rel="stylesheet" href="assets/style.css?v=4">
 <script defer src="assets/vendor/katex/katex.min.js"></script>
 <script defer src="assets/vendor/katex/auto-render.min.js"></script>
-<script defer src="assets/search-index.js?v=1"></script>
-<script defer src="assets/ui.js?v=1"></script>
+<script defer src="assets/search-index.js?v=2"></script>
+<script defer src="assets/ui.js?v=3"></script>
 </head>
 <body>
 <header id="topnav"></header>
@@ -97,7 +97,7 @@ $\frac{\partial}{\partial\theta}\sin\theta=\cos\theta$；$\frac{\partial}{\parti
 <!-- 7 -->
 <h2 id="t-bibo" data-zh="7 BIBO 稳定判断" data-en="7 BIBO stability" data-kw="bibo bounded input bounded output absolutely integrable impulse response counterexample">7 · <span class="zh">BIBO 稳定判断 / 证明</span><span class="en">BIBO stability: decide / prove</span></h2>
 <ul>
-<li><span class="zh"><b>给 $G(s)$</b>：先看是否 proper（不是 ⟹ 不稳定），再看极点（全部 $\operatorname{Re}<0$ ⟹ 稳定）。</span><span class="en"><b>Given $G(s)$</b>: check properness first (non-proper ⟹ unstable), then poles (all $\operatorname{Re}<0$ ⟹ stable).</span></li>
+<li><span class="zh"><b>给 $G(s)$</b>：先看是否 proper（不是 ⟹ 不稳定），再看极点（全部 $\operatorname{Re}\lt 0$ ⟹ 稳定）。</span><span class="en"><b>Given $G(s)$</b>: check properness first (non-proper ⟹ unstable), then poles (all $\operatorname{Re}\lt 0$ ⟹ stable).</span></li>
 <li><span class="zh"><b>给 $g(t)$</b>：算 $\int_0^\infty|g|dt$，有限 ⟺ 稳定。</span><span class="en"><b>Given $g(t)$</b>: compute $\int_0^\infty|g|dt$; finite ⟺ stable.</span></li>
 <li><span class="zh"><b>按定义证不稳定</b>：给一个有界输入（阶跃 $\sigma$、$\sin\omega_0 t$ 共振），算出无界输出。</span><span class="en"><b>Disprove by definition</b>: exhibit a bounded input (step $\sigma$, resonant $\sin\omega_0 t$) with an unbounded output.</span></li>
 <li><span class="zh"><b>按定义证稳定</b>：$|y(t)|\le\int_0^t|g(\tau)||u(t-\tau)|d\tau\le M\int_0^\infty|g|$。</span><span class="en"><b>Prove by definition</b>: $|y(t)|\le\int_0^t|g(\tau)||u(t-\tau)|d\tau\le M\int_0^\infty|g|$.</span></li>
@@ -123,7 +123,7 @@ $\frac{\partial}{\partial\theta}\sin\theta=\cos\theta$；$\frac{\partial}{\parti
 <li><span class="zh">解每个不等式，取<b>交集</b>，写成区间；二次不等式求根后判断开口。</span><span class="en">Solve each inequality and take the <b>intersection</b>; for quadratics find the roots and check the sign pattern.</span></li>
 <li><span class="zh">代一个区间内的 $K$ 和一个区间外的 $K$ 验证。</span><span class="en">Verify with one $K$ inside and one outside the interval.</span></li>
 </ol>
-<div class="ex"><span class="lbl"><span class="zh">模板</span><span class="en">Template</span></span><span class="zh">“The closed-loop characteristic polynomial is $c(s)=\dots$. Routh table: … The system is stable iff all first-column entries are positive: $\dots>0,\ \dots>0$. Hence $\underline{\ a<K<b\ }$.”</span><span class="en">“The closed-loop characteristic polynomial is $c(s)=\dots$. Routh table: … The system is stable iff all first-column entries are positive: $\dots>0,\ \dots>0$. Hence $\underline{\ a<K<b\ }$.”</span></div>
+<div class="ex"><span class="lbl"><span class="zh">模板</span><span class="en">Template</span></span><span class="zh">“The closed-loop characteristic polynomial is $c(s)=\dots$. Routh table: … The system is stable iff all first-column entries are positive: $\dots>0,\ \dots>0$. Hence $\underline{\ a\lt K\lt b\ }$.”</span><span class="en">“The closed-loop characteristic polynomial is $c(s)=\dots$. Routh table: … The system is stable iff all first-column entries are positive: $\dots>0,\ \dots>0$. Hence $\underline{\ a\lt K\lt b\ }$.”</span></div>
 <p><a href="homework.html#hw2-34">HW2 3.4(c)</a> · <a href="homework.html#hw2-319">HW2 3.19</a> · <a class="btn calc" href="calc.html?routh=s%5E4%2B2s%5E3%2B4s%5E2%2B4s%2BK&param=K#routh"><span class="zh">含参 Routh 计算器</span><span class="en">Parametric Routh</span></a></p>
 
 <!-- 10 -->

@@ -6,11 +6,11 @@
 <title>速览 Overview · ECE3250 期中速成</title>
 <script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
 <link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=1">
+<link rel="stylesheet" href="assets/style.css?v=4">
 <script defer src="assets/vendor/katex/katex.min.js"></script>
 <script defer src="assets/vendor/katex/auto-render.min.js"></script>
-<script defer src="assets/search-index.js?v=1"></script>
-<script defer src="assets/ui.js?v=1"></script>
+<script defer src="assets/search-index.js?v=2"></script>
+<script defer src="assets/ui.js?v=3"></script>
 </head>
 <body>
 <header id="topnav"></header>
@@ -64,8 +64,8 @@
   <div class="card">
     <h3><span class="zh">④ 传递函数</span><span class="en">④ Transfer functions</span> <span class="tags"><span class="tag">L7</span><span class="tag hot">★</span></span></h3>
     <p>$G(s)=c(sI-A)^{-1}b+d,\quad \text{DC gain}=G(0)$</p>
-    <p class="zh">proper：$\deg b\le\deg a$；strictly proper：$<$；bi-proper：$=$。终值定理 $y(\infty)=\lim_{s\to0}sY(s)$ 要求 $sY(s)$ 的极点全在开左半平面。</p>
-    <p class="en">Proper: $\deg b\le\deg a$; strictly proper: $<$; bi-proper: $=$. FVT $y(\infty)=\lim_{s\to0}sY(s)$ needs all poles of $sY(s)$ in the open left half-plane.</p>
+    <p class="zh">proper：$\deg b\le\deg a$；strictly proper：$\lt $；bi-proper：$=$。终值定理 $y(\infty)=\lim_{s\to0}sY(s)$ 要求 $sY(s)$ 的极点全在开左半平面。</p>
+    <p class="en">Proper: $\deg b\le\deg a$; strictly proper: $\lt $; bi-proper: $=$. FVT $y(\infty)=\lim_{s\to0}sY(s)$ needs all poles of $sY(s)$ in the open left half-plane.</p>
     <div class="links"><a href="lectures.html#L7">L7</a><a href="methods.html#t-ss2tf"><span class="zh">题型：ss→tf</span><span class="en">Type: ss→tf</span></a><a href="calc.html#ss"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
   </div>
   <div class="card">
@@ -83,7 +83,7 @@
   </div>
   <div class="card">
     <h3><span class="zh">⑦ BIBO 稳定</span><span class="en">⑦ BIBO stability</span> <span class="tags"><span class="tag">L9–L10</span></span></h3>
-    <p>$\int_0^\infty|g(t)|\,dt<\infty\iff G\text{ proper},\ \operatorname{Re}p_i<0$</p>
+    <p>$\int_0^\infty|g(t)|\,dt\lt \infty\iff G\text{ proper},\ \operatorname{Re}p_i\lt 0$</p>
     <p class="zh">证不稳定只要举一个反例（常用阶跃 $\sigma(t)$）；证稳定要对所有有界输入成立。</p>
     <p class="en">To show instability give one counterexample (usually the step $\sigma(t)$); stability must hold for every bounded input.</p>
     <div class="links"><a href="lectures.html#L9">L9</a><a href="lectures.html#L10">L10</a><a href="methods.html#t-bibo"><span class="zh">题型：BIBO</span><span class="en">Type: BIBO</span></a></div>
@@ -157,7 +157,7 @@ $$\text{controller form: }\dot x=\begin{bmatrix}-\frac{a_1}{a_0}&\cdots&-\frac{a
 <h3 id="f-stab" data-kw="stability routh kharitonov pole placement well posed 稳定 判据"><span class="zh">稳定性与设计</span><span class="en">Stability and design</span></h3>
 <div class="key"><span class="lbl"><span class="zh">公式</span><span class="en">Formula</span></span>
 <ul>
-<li><span class="zh"><b>BIBO</b>：$\int_0^\infty|g|<\infty$ ⟺ $G$ proper 且所有极点 $\operatorname{Re}<0$。</span><span class="en"><b>BIBO</b>: $\int_0^\infty|g|<\infty$ ⟺ $G$ proper and all poles have $\operatorname{Re}<0$.</span></li>
+<li><span class="zh"><b>BIBO</b>：$\int_0^\infty|g|\lt \infty$ ⟺ $G$ proper 且所有极点 $\operatorname{Re}\lt 0$。</span><span class="en"><b>BIBO</b>: $\int_0^\infty|g|\lt \infty$ ⟺ $G$ proper and all poles have $\operatorname{Re}\lt 0$.</span></li>
 <li><span class="zh"><b>必要条件</b>：$a_0>0$ 时，稳定 ⟹ 所有 $a_i>0$（反过来不成立）。</span><span class="en"><b>Necessary condition</b>: with $a_0>0$, stable ⟹ all $a_i>0$ (not conversely).</span></li>
 <li><span class="zh"><b>Routh</b>：前两行 $[a_0,a_2,a_4,\dots]$、$[a_1,a_3,\dots]$；</span><span class="en"><b>Routh</b>: first rows $[a_0,a_2,a_4,\dots]$, $[a_1,a_3,\dots]$;</span> $r_{ij}=\dfrac{r_{(i-1)0}\,r_{(i-2)(j+1)}-r_{(i-2)0}\,r_{(i-1)(j+1)}}{r_{(i-1)0}}$<span class="zh">，缺项按 0。</span><span class="en">, missing entries = 0.</span></li>
 <li><span class="zh"><b>Kharitonov</b>（从 $a_0$ 开始）：</span><span class="en"><b>Kharitonov</b> (from $a_0$): </span>$k_1$: L L U U, $k_2$: L U U L, $k_3$: U L L U, $k_4$: U U L L.</li>
