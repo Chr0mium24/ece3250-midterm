@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>讲义 · ECE3250 期中速成</title>
+<script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
+<link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=1">
+<script defer src="assets/vendor/katex/katex.min.js"></script>
+<script defer src="assets/vendor/katex/auto-render.min.js"></script>
+<script defer src="assets/search-index.js?v=1"></script>
+<script defer src="assets/ui.js?v=1"></script>
+</head>
+<body data-zh-only>
+<header id="topnav"></header>
+<div class="wrap with-toc">
+<aside class="toc" data-auto></aside>
+<main>
+<h1>讲义精讲 L1–L13 <small>按课件顺序整理：每讲的核心概念、公式、课件例题（含答案）。<span class="tag hot">总览</span> 表示这页内容出现在老师的 midterm 总览 PPT 里。</small></h1>
+<div class="toolbar"><button data-expand="open">展开全部例题</button><button data-expand="close">折叠全部</button></div>
+
+<!-- ============ L1 ============ -->
+<h2 id="L1" data-kw="introduction feedback control system plant controller reference disturbance noise open loop closed loop"><span class="lno">L1</span>控制系统入门</h2>
+<p>反馈控制系统的组成（课件 L1 第 6 页）：</p>
+<ul>
+<li><b>Plant（被控对象）</b> $P$、<b>Controller</b> $C$；<b>reference</b> $r$（参考输入）、<b>control input</b> $u$、<b>disturbance</b> $d$（对象扰动）、<b>output</b> $y$（传感器输出）、<b>noise</b> $n$（传感器/通信噪声）。</li>
+<li><b>Control = Sensing + Computation + Actuation</b>，三者构成反馈回路（例：巡航控制，传感 = 车速，计算 = 控制律，执行 = 油门）。</li>
+<li><b>开环控制</b>：按预定方式动作，不看输出（闭眼走路）。<b>闭环控制 / 反馈控制</b>：用输出来调整输入（睁眼走路）。</li>
+<li>好的控制系统：<b>先保证稳定</b>（always the first thing），再考虑跟踪参考、抑制扰动、容忍不确定性（如质量未知）。</li>
+</ul>
+<div class="tip"><span class="lbl">练习</span>“学生从教学楼走到图书馆”：plant = 人的身体，controller = 大脑，sensor = 眼睛，reference = 图书馆位置，disturbance = 行人/风，noise = 视线遮挡造成的误判。</div>
+
+<!-- ============ L2 ============ -->
+<h2 id="L2" data-kw="basic concepts unilateral signals unit step impulse system classification siso miso simo mimo static dynamic causal noncausal maglev ipendulum"><span class="lno">L2</span>基本概念：信号、系统分类、两类反馈结构</h2>
+<h3>典型单边信号</h3>
+<p>单边信号：$t<0$ 时 $x(t)=0$。单位阶跃 $\sigma(t)=\begin{cases}0&t<0\\1&t\ge0\end{cases}$；单位冲激 $\delta(t)$：$\delta(t)=0\ (t\ne0)$，$\int_{-\infty}^t\delta(\tau)d\tau=\sigma(t)$，即 $\delta(t)=\dfrac{d\sigma(t)}{dt}$。其它：$\sin\omega t\,\sigma(t)$、$e^{\lambda t}\sigma(t)$。</p>
+<h3>系统分类</h3>
+<ul>
+<li>按输入输出通道数：<b>SISO</b>（本课主要研究）、MISO、SIMO、MIMO。</li>
+<li>按记忆：<b>static（memoryless）</b>，例如比例 $y=K_Pu$；<b>dynamic</b>，例如积分 $y=K_I\int_{-\infty}^t u\,d\tau$。</li>
+<li>按因果：<b>causal</b>，例如 PI $y=K_Pu+K_I\int u$；<b>noncausal</b>，例如<b>微分</b> $y=K_D\dot u$（课件原文就是这么分的）。</li>
+<li>两个特殊的 MISO/SIMO：<b>summing point</b> $y=u_1\pm u_2$；<b>pickoff point</b> $y_1=y_2=u$。</li>
+</ul>
+<h3 id="L2-struct" data-toc data-short="两类基本结构" data-kw="stabilization regulation 2dof controller unity feedback structure">两类基本结构</h3>
+<figure>
+<svg class="bd" viewBox="0 0 330 165" width="330">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#222"/></marker></defs>
+<path class="w" d="M15,40 H61"/><text x="18" y="33">w₁</text>
+<circle class="sum" cx="70" cy="40" r="9"/>
+<path class="w" d="M79,40 H110"/><text x="86" y="33">u₁</text>
+<rect class="blk" x="110" y="22" width="60" height="36"/><text x="125" y="45">P(s)</text>
+<path class="w" d="M170,40 H240 V121"/><text x="247" y="85">y₂</text>
+<circle class="sum" cx="240" cy="130" r="9"/>
+<path class="w" d="M300,130 H249"/><text x="283" y="150">w₂</text>
+<path class="w" d="M231,130 H170"/><text x="193" y="150">u₂</text>
+<rect class="blk" x="110" y="112" width="60" height="36"/><text x="125" y="135">C(s)</text>
+<path class="w" d="M110,130 H70 V49"/><text x="48" y="95">y₁</text><text class="up" x="77" y="64">−</text>
+</svg>
+<figcaption>Feedback system for stabilization：给定 $P$，设计 $C$ 使系统“好稳定”（L2/L9/L11/L12 都用这张图）</figcaption>
+</figure>
+<figure>
+<svg class="bd" viewBox="0 0 380 150" width="380">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#222"/></marker></defs>
+<path class="w" d="M10,50 H51"/><text x="14" y="43">r</text>
+<circle class="sum" cx="60" cy="50" r="9"/>
+<path class="w" d="M69,50 H100"/><text x="78" y="43">e</text>
+<rect class="blk" x="100" y="32" width="55" height="36"/><text x="112" y="55">C(s)</text>
+<path class="w" d="M155,50 H186"/><text x="164" y="43">u</text>
+<circle class="sum" cx="195" cy="50" r="9"/>
+<path class="w" d="M195,12 V41"/><text x="201" y="22">d</text>
+<path class="w" d="M204,50 H230"/><text x="210" y="43">v</text>
+<rect class="blk" x="230" y="32" width="55" height="36"/><text x="242" y="55">P(s)</text>
+<path class="w" d="M285,50 H360"/><text x="335" y="43">z</text><circle class="dot" cx="315" cy="50" r="2.5"/>
+<path class="w" d="M315,50 V111"/>
+<circle class="sum" cx="315" cy="120" r="9"/>
+<path class="w" d="M360,120 H324"/><text x="345" y="140">n</text>
+<path class="w" d="M306,120 H60 V59"/><text x="185" y="138">y</text><text class="up" x="66" y="74">−</text>
+</svg>
+<figcaption>Feedback system for regulation（unity feedback / 1DOF）：跟踪 $r$、抑制 $d$；2DOF 控制器 $\boldsymbol C=[C_1\ C_2]$，1DOF 是 $\boldsymbol C\begin{bmatrix}r\\-y\end{bmatrix}=C(r-y)$ 的特例</figcaption>
+</figure>
+<ul>
+<li><b>MagLev</b>（磁悬浮）：输入电压 $v$，输出位置 $y$ ⟹ <b>SISO</b>；任务是把钢球悬在指定位置。系统本身不稳定，所以要先镇定（stabilization），再做定位跟踪（regulation）。</li>
+<li><b>iPendulum</b>（小车倒立摆）：输入力 $f$，输出小车位置 $x$ 和摆角 $\theta$ ⟹ <b>SIMO</b>；任务是让摆保持直立 ⟹ stabilization。</li>
+</ul>
+<div class="ex"><span class="lbl">例</span> <b>质量-弹簧系统</b>：$m\ddot x=-kx-\rho\dot x+u$（胡克定律 + 线性阻尼）⟹ $\ddot x+\frac{\rho}{m}\dot x+\frac km x=\frac um$。取 $v=\dot x$：
+$$\begin{bmatrix}\dot x\\ \dot v\end{bmatrix}=\begin{bmatrix}0&1\\-\frac km&-\frac\rho m\end{bmatrix}\begin{bmatrix}x\\ v\end{bmatrix}+\begin{bmatrix}0\\ \frac1m\end{bmatrix}u$$</div>
+
+<!-- ============ L3 ============ -->
+<h2 id="L3" data-kw="state space model modeling first principle system identification"><span class="lno">L3</span>状态空间模型 &amp; 电路/机械建模 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<p>一般 $n$ 维状态空间：$\dot x=Ax+Bu$（$A$：$n\times n$，$B$：$n\times m$），部分测量 $y=Cx$（$C$：$p\times n$）。只测 $x_1$ 时 $C=[1\ 0\ \cdots\ 0]$。</p>
+<div class="ex"><span class="lbl">课堂手写例 ①</span> $\dddot x+a_1\ddot x+a_2\dot x+a_3x=u$。取 $\bar x=[x,\dot x,\ddot x]^T$：
+$$\dot{\bar x}=\begin{bmatrix}0&1&0\\0&0&1\\-a_3&-a_2&-a_1\end{bmatrix}\bar x+\begin{bmatrix}0\\0\\1\end{bmatrix}u$$</div>
+<div class="ex"><span class="lbl">课堂手写例 ②</span> 耦合方程 $\ddot y+a_1\dot y+a_2x=u_1,\ \ \dot x+b_1x+b_2y=u_2$。取 $\bar x=[y,\dot y,x]^T$：
+$$\dot{\bar x}=\begin{bmatrix}0&1&0\\0&-a_1&-a_2\\-b_2&0&-b_1\end{bmatrix}\bar x+\begin{bmatrix}0&0\\1&0\\0&1\end{bmatrix}\begin{bmatrix}u_1\\u_2\end{bmatrix}$$
+<p class="small muted">规律：几阶导数就引入几个状态；每个方程解出最高阶导数，放进对应的那一行。</p></div>
+
+<h3 id="L3-rlc" data-toc data-short="RLC 电路（总览）" data-kw="rlc circuit kcl kvl electrical system capacitor inductor">建模方法 &amp; RLC 电路</h3>
+<p>建模三条路：<b>first principle</b>（按物理定律写微分方程）、<b>system identification</b>（用实验数据拟合）、两者结合。</p>
+<p>电路：输入 $v_i$，输出 $v_o$；中间变量取<b>电容电压</b> $v_1,v_2$ 和<b>电感电流</b> $i$（储能元件）；物理定律 KCL + KVL。电路是 $v_i\to R_1\to$ 节点 1（$C_1$ 接地）$\to L\to$ 节点 2（$C_2$、受控电流源 $gv_1$、$R_2$ 都接地）$=v_o$。</p>
+<div class="key"><span class="lbl">推导</span>
+节点 1 KCL：$C_1\dot v_1=\dfrac{v_i-v_1}{R_1}-i$；　节点 2 KCL：$C_2\dot v_2=i-gv_1-\dfrac{v_2}{R_2}$；　回路 KVL：$L\,\dfrac{di}{dt}=v_1-v_2$；　输出 $v_o=v_2$。
+$$\begin{bmatrix}\dot v_1\\ \dot v_2\\ \dot i\end{bmatrix}=\begin{bmatrix}-\frac1{R_1C_1}&0&-\frac1{C_1}\\-\frac g{C_2}&-\frac1{R_2C_2}&\frac1{C_2}\\ \frac1L&-\frac1L&0\end{bmatrix}\begin{bmatrix}v_1\\v_2\\i\end{bmatrix}+\begin{bmatrix}\frac1{R_1C_1}\\0\\0\end{bmatrix}v_i,\qquad v_o=\begin{bmatrix}0&1&0\end{bmatrix}\begin{bmatrix}v_1\\v_2\\i\end{bmatrix}$$
+</div>
+<h3 id="L3-cart" data-toc data-short="双小车系统" data-kw="two cart mechanical system spring damper newton">机械：双小车系统</h3>
+<p>力 $f$ 推 $M_1$，$M_1,M_2$ 之间有弹簧 $K$ 和阻尼 $F$，输出 $y=x_2$。牛顿第二定律：</p>
+$$M_1\ddot x_1=f-K(x_1-x_2)-F(\dot x_1-\dot x_2),\qquad M_2\ddot x_2=K(x_1-x_2)+F(\dot x_1-\dot x_2)$$
+<p>矩阵形式 $\begin{bmatrix}M_1&0\\0&M_2\end{bmatrix}\ddot{\boldsymbol x}+\begin{bmatrix}F&-F\\-F&F\end{bmatrix}\dot{\boldsymbol x}+\begin{bmatrix}K&-K\\-K&K\end{bmatrix}\boldsymbol x=\begin{bmatrix}1\\0\end{bmatrix}f$。取状态 $[x_1,x_2,\dot x_1,\dot x_2]^T$ 可写成一阶形式：</p>
+$$A=\begin{bmatrix}0&0&1&0\\0&0&0&1\\-\frac K{M_1}&\frac K{M_1}&-\frac F{M_1}&\frac F{M_1}\\ \frac K{M_2}&-\frac K{M_2}&\frac F{M_2}&-\frac F{M_2}\end{bmatrix},\ b=\begin{bmatrix}0\\0\\ \frac1{M_1}\\0\end{bmatrix},\ c=\begin{bmatrix}0&1&0&0\end{bmatrix}$$
+
+<!-- ============ L4 ============ -->
+<h2 id="L4" data-kw="electromechanical dc motor lti linear time invariant superposition pendulum"><span class="lno">L4</span>机电系统、LTI、单摆线性化</h2>
+<h3 id="L4-motor" data-toc data-short="直流电机" data-kw="dc motor armature position speed control">电枢控制直流电机</h3>
+<p>参数：$R_a,L_a$ 电枢电阻/电感，$J$ 负载转动惯量，$K_f$ 摩擦系数，$K$ 转矩常数 = 反电势常数。KVL + 转动牛顿第二定律：</p>
+$$R_ai_a+L_a\frac{di_a}{dt}+K\frac{d\theta}{dt}=v_a,\qquad J\frac{d^2\theta}{dt^2}=Ki_a-K_f\frac{d\theta}{dt}$$
+<div class="key"><span class="lbl">两种状态选取</span>
+<b>位置控制</b> $x=[i_a,\theta,\omega]^T$，$y=\theta$：
+$$\dot x=\begin{bmatrix}-\frac{R_a}{L_a}&0&-\frac K{L_a}\\0&0&1\\ \frac KJ&0&-\frac{K_f}J\end{bmatrix}x+\begin{bmatrix}\frac1{L_a}\\0\\0\end{bmatrix}v_a,\quad y=[0\ 1\ 0]x$$
+<b>速度控制</b> $x=[i_a,\omega]^T$，$y=\omega$：$\dot x=\begin{bmatrix}-\frac{R_a}{L_a}&-\frac K{L_a}\\ \frac KJ&-\frac{K_f}J\end{bmatrix}x+\begin{bmatrix}\frac1{L_a}\\0\end{bmatrix}v_a,\ y=[0\ 1]x$
+</div>
+<h3 id="L4-lti" data-toc data-short="LTI 与叠加原理" data-kw="linear time invariant superposition principle">线性、时不变、叠加原理</h3>
+<ul>
+<li><b>线性</b>：状态方程里的 $f,g$ 是 $x,u$ 的线性函数。<b>时不变</b>：$f,g$ 不显含 $t$（常系数）。</li>
+<li>LTI 状态空间：$\dot x=Ax+bu,\ y=cx+du$（$A\in\R^{n\times n}$，$b$ 列向量，$c$ 行向量，$d$ 常数）。</li>
+<li><b>叠加原理</b>（零初值）：$u_1\mapsto y_1,\ u_2\mapsto y_2$ ⟹ $\alpha_1u_1+\alpha_2u_2\mapsto\alpha_1y_1+\alpha_2y_2$。证明：两条轨迹线性组合仍满足方程且初值为 0。</li>
+</ul>
+<h3 id="L4-pend" data-toc data-short="单摆" data-kw="pendulum small angle">例：单摆</h3>
+<p>$J\alpha=$ 摆的力矩 + 外力矩；摆力矩 $=-mg\sin\theta\cdot\ell$，$J=m\ell^2$ ⟹ $-mg\ell\sin\theta+T_e=m\ell^2\ddot\theta$，即</p>
+$$\ddot\theta=-\frac g\ell\sin\theta+\frac{1}{m\ell^2}T_e\quad(\text{非线性})$$
+<p>小角度 $\sin\theta\approx\theta$，取 $\theta_1=\theta,\ \theta_2=\dot\theta$：$\begin{bmatrix}\dot\theta_1\\ \dot\theta_2\end{bmatrix}=\begin{bmatrix}0&1\\-\frac g\ell&0\end{bmatrix}\begin{bmatrix}\theta_1\\ \theta_2\end{bmatrix}+\begin{bmatrix}0\\ \frac1{m\ell^2}\end{bmatrix}T_e$。更规范的做法是用 Jacobian，见 L5。</p>
+
+<!-- ============ L5 ============ -->
+<h2 id="L5" data-kw="linearization operating point maglev magnetic levitation laplace transform"><span class="lno">L5</span>线性化（MagLev）&amp; 拉氏变换 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<h3 id="L5-proc" data-toc data-short="线性化一般步骤" data-kw="linearization procedure jacobian operating point equilibrium deviation">线性化一般步骤</h3>
+<p>非线性系统 $\dot x=f(x,u),\ y=g(x,u)$（$f,g$ 连续可微）。</p>
+<ol class="steps">
+<li><b>工作点（operating point）</b>：常向量 $(u_0,x_0,y_0)$ 满足 $0=f(x_0,u_0)$，$y_0=g(x_0,u_0)$。物理意义：$u\equiv u_0$、$x(0)=x_0$ ⟹ $x(t)\equiv x_0$、$y\equiv y_0$（系统静止不动）。</li>
+<li><b>偏差变量</b>：$\tilde u=u-u_0$，$\tilde x=x-x_0$，$\tilde y=y-y_0$。由于 $x_0$ 不随时间变，$\dot{\tilde x}=\dot x$。</li>
+<li><b>Taylor 一阶展开</b>，丢掉高阶项：
+$$\dot{\tilde x}=A\tilde x+b\tilde u,\quad \tilde y=c\tilde x+d\tilde u,\qquad A=\frac{\partial f}{\partial x}\Big|_{x_0,u_0},\ b=\frac{\partial f}{\partial u}\Big|_{x_0,u_0},\ c=\frac{\partial g}{\partial x}\Big|_{x_0,u_0},\ d=\frac{\partial g}{\partial u}\Big|_{x_0,u_0}$$
+其中 $\frac{\partial f}{\partial x}$ 是 Jacobian，第 $(i,j)$ 元为 $\partial f_i/\partial x_j$。</li>
+<li>线性化模型只在<b>小偏差</b>时成立。</li>
+</ol>
+<div class="ex"><span class="lbl">单摆再看</span> $f_2=-\frac g\ell\sin\theta_1+\frac1{m\ell^2}T_e$，在 $(0,0,0)$：$\frac{\partial f_2}{\partial\theta_1}=-\frac g\ell\cos\theta_1\big|_0=-\frac g\ell$，$\frac{\partial f_2}{\partial\theta_2}=0$，$\frac{\partial f_2}{\partial T_e}=\frac1{m\ell^2}$。结果与小角度近似相同。</div>
+
+<h3 id="L5-maglev" data-toc data-short="MagLev 线性化（总览）" data-kw="maglev magnetic levitation operating point linearized model">MagLev 建模与线性化 <span class="tags"><span class="tag hot">总览</span></span></h3>
+<p>输入电压 $v$，输出球的位置 $y$（向下为正），中间变量为线圈电流 $i$。电感 $L(y)=L_0+\frac{rL_1}{y}$（$r$ 为球半径）。</p>
+<ul>
+<li>KVL：$Ri+\frac{d(L(y)i)}{dt}=v$ ⟹ $Ri-\dfrac{rL_1i}{y^2}\dot y+L(y)\dfrac{di}{dt}=v$。</li>
+<li>磁力 $f=\dfrac{rL_1}{2}\dfrac{i^2}{y^2}$（向上），牛顿：$M\ddot y=-\dfrac{rL_1}{2}\dfrac{i^2}{y^2}+Mg$。</li>
+</ul>
+<p>取 $x_1=i,\ x_2=y,\ x_3=\dot y,\ u=v$：</p>
+$$\begin{bmatrix}\dot x_1\\ \dot x_2\\ \dot x_3\end{bmatrix}=\begin{bmatrix}\dfrac{u-Rx_1+rL_1x_1x_3/x_2^2}{L(x_2)}\\ x_3\\ -\dfrac{rL_1}{2M}\dfrac{x_1^2}{x_2^2}+g\end{bmatrix},\qquad y=x_2$$
+<div class="key"><span class="lbl">工作点</span> 要求 $y=y_0$：$0=x_{30}$；$0=-\frac{rL_1}{2M}\frac{x_{10}^2}{x_{20}^2}+g$；$0=u_0-Rx_{10}$（$x_{30}=0$ 时）。于是
+$$x_{20}=y_0,\quad x_{30}=0,\quad x_{10}=y_0\sqrt{\frac{2Mg}{rL_1}},\quad u_0=Ry_0\sqrt{\frac{2Mg}{rL_1}}$$</div>
+<div class="key"><span class="lbl">线性化结果</span>
+$$A=\begin{bmatrix}-\dfrac{R}{L(y_0)}&0&\dfrac{\sqrt{2rL_1Mg}}{y_0L(y_0)}\\0&0&1\\-\dfrac1{y_0}\sqrt{\dfrac{2rL_1g}{M}}&\dfrac{2g}{y_0}&0\end{bmatrix},\quad b=\begin{bmatrix}\frac1{L(y_0)}\\0\\0\end{bmatrix},\quad c=[0\ 1\ 0],\quad d=0$$
+<p class="small">关键偏导：$\frac{\partial f_3}{\partial x_1}=-\frac{rL_1x_1}{Mx_2^2}$，$\frac{\partial f_3}{\partial x_2}=\frac{rL_1x_1^2}{Mx_2^3}$，$\frac{\partial f_1}{\partial x_3}=\frac{rL_1x_1}{x_2^2L(x_2)}$；$\frac{\partial f_1}{\partial x_2}$ 在工作点为 0，因为分子 $u_0-Rx_{10}+\dots=0$，且含 $x_3$ 的项也为 0。代入 $x_{10}^2=\frac{2Mg}{rL_1}y_0^2$ 化简即得。</p>
+</div>
+
+<h3 id="L5-lap" data-toc data-short="拉氏变换" data-kw="laplace transform roc region of convergence derivative integration convolution">拉氏变换（Appendix A）</h3>
+<p>$X(s)=\L[x(t)]=\int_{0^-}^\infty x(t)e^{-st}dt$（单边信号），使积分有意义的 $s$ 的集合叫 <b>ROC</b>。$\L[\delta]=1$；$\L[\sigma]=\frac1s$（$\operatorname{Re}s>0$，否则无定义）。完整的表和性质见 <a href="index.html#formulas">速览·必背公式</a>。</p>
+<ul>
+<li><b>微分性质证明</b>：分部积分，$\int\dot x e^{-st}dt=e^{-st}x\big|+s\int xe^{-st}dt$，在 ROC 内边界项为 0 ⟹ $\L[\dot x]=sX$。</li>
+<li><b>积分性质</b>：$y=\int_{-\infty}^tx\,d\tau$ ⟹ $Y=X/s$。<b>卷积性质</b>：$\L[x*y]=XY$，交换积分次序证明。单边信号的卷积 $x*y=\int_{0^-}^{t^+}x(t-\tau)y(\tau)d\tau$。</li>
+<li><b>注意</b>：$\dot\sigma=\delta$，所以 $s\cdot\frac1s=1=\Delta(s)$；$x=(\cos\omega t)\sigma(t)$ ⟹ $\dot x=\delta(t)-\omega(\sin\omega t)\sigma(t)$，所以 $s\frac{s}{s^2+\omega^2}=1-\frac{\omega^2}{s^2+\omega^2}$。</li>
+<li>反变换的复积分公式课件写的是 “Useless!!”，实际用<b>部分分式 + 查表</b>。</li>
+</ul>
+
+<!-- ============ L6 ============ -->
+<h2 id="L6" data-kw="inverse laplace partial fraction expansion residue multiple poles repeated"><span class="lno">L6</span>拉氏反变换：部分分式</h2>
+<div class="ex"><span class="lbl">例 1：单极点 + 共轭极点</span> $G(s)=\dfrac{2}{s(s^2+2s+2)}=\dfrac{2}{s(s+1-j)(s+1+j)}=\dfrac{c_1}{s}+\dfrac{c_2}{s+1-j}+\dfrac{c_3}{s+1+j}$
+<details class="sol"><summary>解答</summary><div class="body">
+<p><b>方法一（留数）</b>：$c_1=\lim_{s\to0}sG(s)=1$；$c_2=\lim_{s\to-1+j}(s+1-j)G(s)=\dfrac{2}{(-1+j)(2j)}=-\tfrac12+\tfrac12j$；$c_3=\bar c_2=-\tfrac12-\tfrac12j$。</p>
+<p><b>方法二（比较系数）</b>：通分后 $2=(c_1+c_2+c_3)s^2+[2c_1+(1+j)c_2+(1-j)c_3]s+2c_1$，解得同样的结果。</p>
+<p>反变换：$\L^{-1}[G]=\big[1+(-\tfrac12+\tfrac12j)e^{(-1+j)t}+(-\tfrac12-\tfrac12j)e^{(-1-j)t}\big]\sigma(t)=\big[1-e^{-t}(\cos t+\sin t)\big]\sigma(t)$。</p>
+<p class="small muted">共轭对的快捷公式：$c e^{pt}+\bar c e^{\bar pt}=2e^{\alpha t}(x\cos\beta t-y\sin\beta t)$，其中 $p=\alpha+j\beta$，$c=x+jy$。</p>
+<a class="btn calc" href="calc.html?pfn=2&pfd=s(s%5E2%2B2s%2B2)#pf">计算器验证</a>
+</div></details></div>
+<div class="ex"><span class="lbl">例 2：重极点</span> $G(s)=\dfrac{1}{(s+1)^2s^3}=\dfrac{c_{11}}{s+1}+\dfrac{c_{12}}{(s+1)^2}+\dfrac{c_{21}}{s}+\dfrac{c_{22}}{s^2}+\dfrac{c_{23}}{s^3}$
+<details class="sol"><summary>解答</summary><div class="body">
+<p>最高次项直接取极限，往下每低一次多求一阶导数，再除以阶乘：</p>
+$$c_{12}=\lim_{s\to-1}(s+1)^2G=\frac1{s^3}\Big|_{-1}=-1,\qquad c_{11}=\frac1{1!}\lim_{s\to-1}\frac{d}{ds}\big[(s+1)^2G\big]=-\frac{3}{s^4}\Big|_{-1}=-3$$
+$$c_{23}=\lim_{s\to0}s^3G=1,\quad c_{22}=\frac1{1!}\frac{d}{ds}\frac1{(s+1)^2}\Big|_0=-2,\quad c_{21}=\frac1{2!}\frac{d^2}{ds^2}\frac1{(s+1)^2}\Big|_0=\frac{6}{2}=3$$
+<p>也可以比较系数：$1=(c_{11}+c_{21})s^4+(c_{11}+c_{12}+2c_{21}+c_{22})s^3+(c_{21}+2c_{22}+c_{23})s^2+(c_{22}+2c_{23})s+c_{23}$。</p>
+$$\L^{-1}[G]=\Big[-(3+t)e^{-t}+3-2t+\tfrac12t^2\Big]\sigma(t)$$
+<a class="btn calc" href="calc.html?pfn=1&pfd=(s%2B1)%5E2%20s%5E3#pf">计算器验证</a>
+</div></details></div>
+<h3 id="L6-imp" data-toc data-short="冲激响应" data-kw="impulse response convolution">冲激响应</h3>
+<p>零初值的 LTI 系统，输入 $u=\delta(t-\tau)$ 时输出为 $h(t-\tau)$，$h$ 就是<b>冲激响应</b>。由 sifting 性质 $u(t)=\int u(\tau)\delta(t-\tau)d\tau$ 和叠加原理：</p>
+$$y(t)=\int_{-\infty}^{\infty}u(\tau)h(t-\tau)\,d\tau=(u*h)(t)\quad\Longrightarrow\quad Y(s)=H(s)U(s)$$
+
+<!-- ============ L7 ============ -->
+<h2 id="L7" data-kw="transfer function dc gain final value theorem fvt"><span class="lno">L7</span>传递函数、DC gain、终值定理 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<h3 id="L7-ss2tf" data-toc data-short="状态空间 → 传递函数" data-kw="state space to transfer function dc motor maglev">状态空间 → 传递函数</h3>
+<p>对 $\dot x=Ax+bu,\ y=cx+du$ 取拉氏变换（零初值）：$sX=AX+bU$ ⟹ $X=(sI-A)^{-1}bU$ ⟹</p>
+<div class="key"><span class="lbl">公式</span> $$G(s)=\frac{Y(s)}{U(s)}=c(sI-A)^{-1}b+d$$ 传递函数 = 输出拉氏变换 / 输入拉氏变换。它总是有理函数 $\frac{b(s)}{a(s)}$，分母 $a(s)=\det(sI-A)$（约分前）。</div>
+<div class="ex"><span class="lbl">例：直流电机</span>
+<p>位置控制：$G(s)=[0\ 1\ 0]\begin{bmatrix}s+\frac{R_a}{L_a}&0&\frac K{L_a}\\0&s&-1\\-\frac KJ&0&s+\frac{K_f}J\end{bmatrix}^{-1}\begin{bmatrix}\frac1{L_a}\\0\\0\end{bmatrix}=\dfrac{K}{L_aJs^3+(R_aJ+K_fL_a)s^2+(R_aK_f+K^2)s}$</p>
+<p>速度控制：$G(s)=\dfrac{K}{L_aJs^2+(R_aJ+K_fL_a)s+(R_aK_f+K^2)}$（位置 = 速度的积分，所以多了一个 $\frac1s$）。</p>
+<p>MagLev：$G(s)=\dfrac{-\frac1{y_0}\sqrt{\frac{2rL_1g}{M}}\frac1{L(y_0)}}{\big(s+\frac{R}{L(y_0)}\big)\big(s^2-\frac{2g}{y_0}\big)+\frac{2rL_1g}{y_0^2L(y_0)}s}$。</p>
+<p class="small muted">小技巧：$c$ 只取第 2 个状态、$b$ 只在第 1 个分量非零时，$G$ 只需要 $(sI-A)^{-1}$ 的 $(2,1)$ 元 $=\dfrac{\text{cof}_{12}}{\det(sI-A)}$。</p>
+</div>
+<h3 id="L7-defs" data-toc data-short="有理函数术语" data-kw="rational function proper strictly proper biproper relative degree zeros poles coprime">有理函数术语</h3>
+<ul>
+<li>$G=\frac{b(s)}{a(s)}$：$b$ 是分子多项式，$a$ 是分母多项式；<b>coprime</b> 指没有公因式。</li>
+<li>零极点增益形式：$G=K\frac{(s-z_1)\cdots(s-z_m)}{(s-p_1)\cdots(s-p_n)}$，$z_i$ 叫零点，$p_i$ 叫极点。</li>
+<li><b>proper</b>：$\deg b\le\deg a$ ⟺ $|G(\infty)|<\infty$；<b>strictly proper</b>：$\deg b<\deg a$ ⟺ $G(\infty)=0$；<b>bi-proper</b>：$\deg b=\deg a$ ⟺ $0\ne|G(\infty)|\ne\infty$。</li>
+<li><b>relative degree</b> $=\deg a-\deg b$；<b>order（degree）</b> $=\deg a$；<b>DC gain</b> $=G(0)$。</li>
+<li>冲激响应 $g(t)=\L^{-1}[G(s)]$（令 $U=1$）。</li>
+</ul>
+<h3 id="L7-fvt" data-toc data-short="DC gain 与终值定理" data-kw="dc gain final value theorem steady state step response">DC gain 与终值定理</h3>
+<p>DC gain 的定义：阶跃响应的稳态值 $y(\infty)$（$u=\sigma(t)$）。</p>
+<div class="key"><span class="lbl">终值定理 FVT</span> 若 $sY(s)$ 的极点全在开左半平面（$\operatorname{Re}<0$），则 $y(\infty)=\lim_{s\to0}sY(s)$。阶跃响应 $Y=\frac{H}{s}$ ⟹ $H$ 极点全在 OLHP 时 $y(\infty)=H(0)$。</div>
+<ul>
+<li>$Y=\frac1{s+a}$：$a>0$ 时 $y(\infty)=0$；$a<0$ 时 $y\to\infty$，FVT 给出的 0 是错的。</li>
+<li>$Y=\frac{1}{s^2+\omega^2}$：$y=\sin\omega t$ 没有极限，FVT 不能用。$Y=\frac cs$ ⟹ $y(\infty)=c$。</li>
+</ul>
+<div class="ex"><span class="lbl">例</span> $H(s)=\dfrac{s^2+5s+3}{s^3+4s^2+2s+5}$。Routh：$1,\ 4,\ \frac{8-5}{4}=\frac34,\ 5$ 全正 ⟹ 极点全在 OLHP ⟹ DC gain $=H(0)=\frac35$。<a class="btn calc" href="calc.html?routh=s%5E3%2B4s%5E2%2B2s%2B5#routh">Routh 验证</a></div>
+
+<!-- ============ L8 ============ -->
+<h2 id="L8" data-kw="block diagram reduction simplification matlab realization"><span class="lno">L8</span>方框图化简、MATLAB、实现 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<h3 id="L8-rules" data-toc data-short="等效变换规则" data-kw="equivalent block diagrams series parallel feedback moving summing junction pickoff">等效变换规则（课件那张表）</h3>
+<div class="tbl-wrap"><table>
+<tr><th>原图</th><th>等效</th></tr>
+<tr><td>串联 $G_1\to G_2$</td><td>$G_2G_1$</td></tr>
+<tr><td>并联 $G_1,G_2$ 汇入同一求和点</td><td>$G_1+G_2$</td></tr>
+<tr><td>求和点在 $G$ <b>之后</b>，另一路输入 $v$</td><td>求和点移到 $G$ <b>之前</b>，$v$ 支路补乘 $\frac1G$</td></tr>
+<tr><td>求和点在 $G$ <b>之前</b>，另一路输入 $v$</td><td>求和点移到 $G$ <b>之后</b>，$v$ 支路补乘 $G$</td></tr>
+<tr><td>引出点在 $G$ <b>之后</b></td><td>引出点移到 $G$ <b>之前</b>，引出支路补乘 $G$</td></tr>
+<tr><td>反馈环：前向 $G$，反馈 $H$，<b>求和点为 +</b></td><td>$\dfrac{G}{1-GH}$（求和点为 − 时是 $\dfrac{G}{1+GH}$）</td></tr>
+</table></div>
+<div class="trap"><span class="lbl">注意</span> 课件的方框图里，求和点只在标了 “−” 的输入处做减法。表里的反馈公式是 $\frac{G}{1-GH}$，对应正反馈。</div>
+<div class="ex"><span class="lbl">例：简单反馈</span> $r\to F\to\oplus\to C\to P\to y$，$y$ 经 $H$ 负反馈：$Y=\dfrac{PCF}{1+PCH}R$。</div>
+
+<h3 id="L8-big" data-toc data-short="复杂反馈系统（总览）" data-kw="complicated feedback system loop example">复杂反馈系统 <span class="tags"><span class="tag hot">总览</span></span></h3>
+<figure>
+<svg class="bd" viewBox="0 0 500 225" width="500">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#222"/></marker></defs>
+<text x="8" y="74">R</text><path class="w" d="M8,80 H61"/><circle class="dot" cx="38" cy="80" r="2.5"/>
+<circle class="sum" cx="70" cy="80" r="9"/>
+<path class="w" d="M79,80 H100"/><rect class="blk" x="100" y="64" width="44" height="32"/><text x="112" y="85">G₁</text>
+<path class="w" d="M144,80 H196"/><circle class="dot" cx="170" cy="80" r="2.5"/>
+<circle class="sum" cx="205" cy="80" r="9"/>
+<path class="w" d="M214,80 H232"/><rect class="blk" x="232" y="64" width="44" height="32"/><text x="244" y="85">G₂</text>
+<path class="w" d="M276,80 H306"/><circle class="sum" cx="315" cy="80" r="9"/>
+<path class="w" d="M324,80 H342"/><rect class="blk" x="342" y="64" width="44" height="32"/><text x="354" y="85">G₃</text>
+<path class="w" d="M386,80 H480"/><circle class="dot" cx="405" cy="80" r="2.5"/><circle class="dot" cx="430" cy="80" r="2.5"/><text x="462" y="72">Y</text>
+<path class="w" d="M38,80 V28 H112"/><rect class="blk" x="112" y="13" width="40" height="30"/><text x="126" y="33">F</text>
+<path class="w" d="M152,28 H205 V71"/>
+<path class="w" d="M205,128 V89"/><text x="212" y="124">D</text>
+<path class="w" d="M170,80 V138 H144"/><rect class="blk" x="100" y="122" width="44" height="32"/><text x="111" y="143">H₁</text>
+<path class="w" d="M100,138 H79"/><circle class="sum" cx="70" cy="138" r="9"/><path class="w" d="M70,129 V89"/>
+<path class="w" d="M405,80 V138 H386"/><rect class="blk" x="342" y="122" width="44" height="32"/><text x="353" y="143">H₂</text>
+<path class="w" d="M342,138 H315 V89"/><text class="up" x="321" y="104">−</text>
+<path class="w" d="M430,80 V198 H276"/><rect class="blk" x="232" y="182" width="44" height="32"/><text x="243" y="203">H₃</text>
+<path class="w" d="M232,198 H70 V147"/>
+</svg>
+<figcaption>求 $R\to Y$ 和 $D\to Y$。只有 $H_2$ 那个输入是 “−”，其它求和点都是 “+”</figcaption>
+</figure>
+<details class="sol"><summary>化简步骤与结果</summary><div class="body">
+<ol class="steps">
+<li>令 $D=0$。化简 Loop 1（$G_1\to H_1\to G_1$，<b>正反馈</b>）：$\dfrac{G_1}{1-G_1H_1}$；化简 Loop 2（$G_3\to H_2$，负反馈）：$\dfrac{G_3}{1+G_3H_2}$。</li>
+<li>Junction 1（$G_1$ 前，接收 $H_3$ 反馈）移到 Junction 2（$G_1$ 后）：$H_3$ 支路补乘 $\frac{G_1}{1-G_1H_1}$，变成 $\dfrac{G_1H_3}{1-G_1H_1}$；前馈变成 $F+\dfrac{G_1}{1-G_1H_1}$。</li>
+<li>剩下一个正反馈环：前向 $\frac{G_2G_3}{1+G_3H_2}$，反馈 $\frac{G_1H_3}{1-G_1H_1}$：
+$$\frac YR=\Big(F+\frac{G_1}{1-G_1H_1}\Big)\frac{\frac{G_2G_3}{1+G_3H_2}}{1-\frac{G_2G_3}{1+G_3H_2}\frac{G_1H_3}{1-G_1H_1}}=\frac{G_2G_3(F-FG_1H_1+G_1)}{1-G_1H_1+G_3H_2-G_1G_3H_1H_2-G_1G_2G_3H_3}$$</li>
+<li>$D\to Y$（令 $R=0$）：$D$ 从 Junction 2 进入，前馈只有 $\frac{G_2G_3}{1+G_3H_2}$，反馈环相同：
+$$\frac YD=\frac{G_2G_3(1-G_1H_1)}{1-G_1H_1+G_3H_2-G_1G_3H_1H_2-G_1G_2G_3H_3}$$</li>
+</ol>
+<p class="small muted">检查：两个传递函数的分母（特征式）必须相同。</p>
+</div></details>
+
+<h3 id="L8-matlab" data-toc data-short="MATLAB 命令" data-kw="matlab tf ss zpk pole zero dcgain feedback step impulse lsim">MATLAB 速查</h3>
+<div class="tbl-wrap"><table>
+<tr><th>用途</th><th>命令</th></tr>
+<tr><td>多项式 $p=s^3+2s^2+3s+4$</td><td><code>p=[1 2 3 4]; roots(p); p+[0 0 q]; conv(p,q)</code></td></tr>
+<tr><td>状态空间 / 传递函数</td><td><code>F=ss(A,B,C,D); G=tf(num,den); tf(F); ss(G)</code>（<code>ss(tf(F))</code> 和原模型不同）</td></tr>
+<tr><td>取参数</td><td><code>[A,B,C,D]=ssdata(F); [num,den]=tfdata(F)</code></td></tr>
+<tr><td>极零点 / DC 增益</td><td><code>pole(F); zero(F); zpk(F); dcgain(F)</code></td></tr>
+<tr><td>系统运算</td><td><code>F+G, F*G, F-G, F/G</code>；负反馈 $\frac F{1+FG}$：<code>feedback(F,G)</code>；正反馈：<code>feedback(F,G,1)</code></td></tr>
+<tr><td>响应</td><td><code>impulse(G); step(G); lsim(G,u,t)</code></td></tr>
+</table></div>
+
+<h3 id="L8-real" data-toc data-short="控制器型 / 观测器型实现" data-kw="realization controller form observer form controllable canonical op amp">实现：控制器型 &amp; 观测器型</h3>
+<p>建模：物理系统 ⟹ TF/SS；<b>实现（realization）</b>：TF/SS ⟹ 物理系统（如运放电路）。给定 proper $G=\dfrac{b_0s^n+\dots+b_n}{a_0s^n+\dots+a_n}$，$a_0\ne0$。</p>
+<div class="key"><span class="lbl">控制器型</span> 引入中间信号 $x$：$a(s)X=U$，$Y=b(s)X$。状态 $\boldsymbol x=[x^{(n-1)},\dots,\dot x,x]^T$（积分器链上电容的电压）：
+$$\dot{\boldsymbol x}=\begin{bmatrix}-\frac{a_1}{a_0}&\cdots&-\frac{a_{n-1}}{a_0}&-\frac{a_n}{a_0}\\1&\cdots&0&0\\ \vdots&\ddots&\vdots&\vdots\\0&\cdots&1&0\end{bmatrix}\boldsymbol x+\begin{bmatrix}\frac1{a_0}\\0\\ \vdots\\0\end{bmatrix}u,\quad y=\Big[b_1-b_0\tfrac{a_1}{a_0}\ \cdots\ b_n-b_0\tfrac{a_n}{a_0}\Big]\boldsymbol x+\frac{b_0}{a_0}u$$</div>
+<div class="key"><span class="lbl">观测器型</span> 由 $a_0y=x_1+b_0u$，$\dot x_k=x_{k+1}-a_ky+b_ku$，$\dot x_n=-a_ny+b_nu$：
+$$\dot{\boldsymbol x}=\begin{bmatrix}-\frac{a_1}{a_0}&1&\cdots&0\\ \vdots&\vdots&\ddots&\vdots\\-\frac{a_{n-1}}{a_0}&0&\cdots&1\\-\frac{a_n}{a_0}&0&\cdots&0\end{bmatrix}\boldsymbol x+\begin{bmatrix}b_1-b_0\frac{a_1}{a_0}\\ \vdots\\ b_n-b_0\frac{a_n}{a_0}\end{bmatrix}u,\quad y=\Big[\tfrac1{a_0}\ 0\cdots0\Big]\boldsymbol x+\frac{b_0}{a_0}u$$
+（$A_{obs}=A_{ctrl}^T$，$b_{obs}=c_{ctrl}^T$，$c_{obs}=b_{ctrl}^T$）</div>
+<div class="ex"><span class="lbl">例</span> $G=\frac{s+2}{s^2+2s+1}$：$b_0=0,b_1=1,b_2=2$，$a=[1,2,1]$ ⟹ 控制器型 $A=\begin{bmatrix}-2&-1\\1&0\end{bmatrix},\ b=\begin{bmatrix}1\\0\end{bmatrix},\ c=[1\ \ 2],\ d=0$。<a class="btn calc" href="calc.html?tfn=s%2B2&tfd=s%5E2%2B2s%2B1#ss">计算器</a></div>
+
+<!-- ============ L9 ============ -->
+<h2 id="L9" data-kw="closed loop modeling well posed bounded signal bibo stability"><span class="lno">L9</span>闭环建模、适定性、有界信号、BIBO</h2>
+<h3 id="L9-loop" data-toc data-short="闭环 8 个传递函数" data-kw="gang of four eight transfer functions well posed ill posed">稳定化反馈的 8 个传递函数</h3>
+<p>用 L2 第一张图（$u_1=w_1-y_1$，$y_2=Pu_1$，$u_2=w_2+y_2$，$y_1=Cu_2$）：</p>
+$$\begin{bmatrix}U_1\\U_2\\Y_1\\Y_2\end{bmatrix}=\begin{bmatrix}\frac{1}{1+PC}&\frac{-C}{1+PC}\\ \frac{P}{1+PC}&\frac{1}{1+PC}\\ \frac{PC}{1+PC}&\frac{C}{1+PC}\\ \frac{P}{1+PC}&\frac{-PC}{1+PC}\end{bmatrix}\begin{bmatrix}W_1\\W_2\end{bmatrix}$$
+<p>除了符号以外，其实只有 4 个不同的传递函数，这就是 <b>gang of four</b>：$\frac1{1+PC},\ \frac{C}{1+PC},\ \frac{P}{1+PC},\ \frac{PC}{1+PC}$。</p>
+<div class="key"><span class="lbl">适定 well-posed</span> $1+P(s)C(s)\not\equiv0$；否则 ill-posed，例如 $P=1,C=-1$，内部信号无法由外部信号唯一确定。（L11 定理里用的是更强的 $1+P(\infty)C(\infty)\ne0$。）</div>
+<h3 id="L9-bibo" data-toc data-short="有界信号与 BIBO" data-kw="bibo bounded input bounded output">有界信号与 BIBO 稳定</h3>
+<ul>
+<li>$x(t)$ <b>有界</b>：存在 $M>0$ 使 $|x(t)|\le M,\ \forall t\in[0,\infty)$。最小的界叫峰值 $\|x\|_\infty=\sup_t|x(t)|$。</li>
+<li><b>BIBO 稳定</b>：每一个有界输入都产生有界输出。证不稳定：找一个反例；证稳定：要对所有有界输入成立（难）。</li>
+</ul>
+<div class="ex"><span class="lbl">例</span> $G(s)=\dfrac{1}{s+\gamma}$ 的稳定性。
+<details class="sol"><summary>解答</summary><div class="body">
+<ul>
+<li>$\gamma<0$：取 $u=\sigma(t)$，$y=\L^{-1}\big[\frac{1}{s(s+\gamma)}\big]=\frac1\gamma(1-e^{-\gamma t})\sigma(t)\to\infty$ ⟹ 不稳定。</li>
+<li>$\gamma=0$：积分器，$u=\sigma$ ⟹ $y=t\sigma(t)\to\infty$ ⟹ 不稳定。</li>
+<li>$\gamma>0$：$g=e^{-\gamma t}\sigma(t)$，$|y(t)|\le\int_0^t|g(\tau)||u(t-\tau)|d\tau\le M\int_0^\infty e^{-\gamma\tau}d\tau=\frac M\gamma$ ⟹ 稳定。</li>
+</ul></div></details></div>
+
+<!-- ============ L10 ============ -->
+<h2 id="L10" data-kw="stability criterion polynomial stability routh table absolutely integrable"><span class="lno">L10</span>稳定性判据、多项式稳定、Routh 表 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<div class="key"><span class="lbl">定理</span>
+<ol>
+<li>冲激响应为 $g(t)$ 的 LTI 系统稳定 ⟺ $\displaystyle\int_0^\infty|g(t)|dt<\infty$（绝对可积）。</li>
+<li>传递函数为 $G(s)$ 的系统稳定 ⟺ <b>$G$ proper</b> 且 <b>所有极点实部 $<0$</b>。</li>
+</ol></div>
+<p>极点 = 分母多项式的根 ⟹ 判断系统稳定 ⟺ 判断<b>多项式稳定</b>（所有根实部 $<0$）。能不能不求根？</p>
+<div class="key"><span class="lbl">必要条件</span> $a(s)=a_0s^n+\dots+a_n$，$a_0>0$。若 $a(s)$ 稳定，则所有 $a_i>0$。反例：$s^3+s^2+4s+30=(s+3)(s^2-2s+10)$，根为 $-3,\ 1\pm3j$，系数全正但不稳定。</div>
+<h3 id="L10-routh" data-toc data-short="Routh 表构造" data-kw="routh table construction routh hurwitz criterion">Routh 表</h3>
+<div class="tbl-wrap"><table class="routh" style="font-size:14px">
+<tr><td class="row-h">$s^n$</td><td>$r_{00}=a_0$</td><td>$r_{01}=a_2$</td><td>$r_{02}=a_4$</td><td>$\cdots$</td></tr>
+<tr><td class="row-h">$s^{n-1}$</td><td>$r_{10}=a_1$</td><td>$r_{11}=a_3$</td><td>$r_{12}=a_5$</td><td>$\cdots$</td></tr>
+<tr><td class="row-h">$s^{n-2}$</td><td>$r_{20}$</td><td>$r_{21}$</td><td>$\cdots$</td><td></td></tr>
+<tr><td class="row-h">$\vdots$</td><td>$\vdots$</td><td></td><td></td><td></td></tr>
+<tr><td class="row-h">$s^0$</td><td>$r_{n0}$</td><td></td><td></td><td></td></tr>
+</table></div>
+<div class="key"><span class="lbl">递推</span> $$r_{ij}=-\frac{1}{r_{(i-1)0}}\det\begin{bmatrix}r_{(i-2)0}&r_{(i-2)(j+1)}\\ r_{(i-1)0}&r_{(i-1)(j+1)}\end{bmatrix}=\frac{r_{(i-1)0}\,r_{(i-2)(j+1)}-r_{(i-2)0}\,r_{(i-1)(j+1)}}{r_{(i-1)0}}$$ 缺失的 $r_{(i-1)(j+1)}$ 取 0，此时 $r_{ij}=r_{(i-2)(j+1)}$。</div>
+<div class="key"><span class="lbl">Routh 判据</span> 以下三条等价：(1) $a(s)$ 稳定；(2) Routh 表所有元素 $>0$；(3) 第一列所有元素 $>0$。</div>
+<div class="ex"><span class="lbl">例（总览）</span> $a(s)=s^4+10s^3+35s^2+50s+24$。
+<details class="sol"><summary>Routh 表</summary><div class="body">
+<p>$s^4$: $1,\ 35,\ 24$；$s^3$: $10,\ 50$；$r_{20}=-\frac1{10}\det\begin{bmatrix}1&35\\10&50\end{bmatrix}=30$，$r_{21}=-\frac1{10}\det\begin{bmatrix}1&24\\10&0\end{bmatrix}=24$；$r_{30}=-\frac1{30}\det\begin{bmatrix}10&50\\30&24\end{bmatrix}=42$；$r_{40}=-\frac1{42}\det\begin{bmatrix}30&24\\42&0\end{bmatrix}=24$。第一列 $1,10,30,42,24$ 全正 ⟹ 稳定（其实 $=(s+1)(s+2)(s+3)(s+4)$）。</p>
+<a class="btn calc" href="calc.html?routh=s%5E4%2B10s%5E3%2B35s%5E2%2B50s%2B24#routh">计算器</a></div></details></div>
+<div class="ex"><span class="lbl">例</span> 三个不稳定的例子：
+<ul>
+<li>$s^3+2s^2+3s+10$：$s^1$ 行 $=\frac{2\cdot3-1\cdot10}{2}=-2<0$ ⟹ 不稳定。</li>
+<li>$s^5+10s^4+35s^3+50s^2+24s+300$：$s^3$ 行 $r_{20}=30,\ r_{21}=\frac{10\cdot24-300}{10}=-6$ ⟹ <b>一出现负数</b>就判不稳定（不必算完）。</li>
+<li>$s^4+3s^3+3s^2+3s+2$：$s^2$ 行 $2,2$，$r_{30}=\frac{2\cdot3-3\cdot2}{2}=0$，$r_{40}$ 算不了 ⟹ 不稳定。</li>
+</ul></div>
+<div class="ex"><span class="lbl">例（总览）</span> 求 $K$ 使 $a(s)=s^4+2s^3+4s^2+4s+K$ 稳定。
+<details class="sol"><summary>解答</summary><div class="body">
+<p>$s^4$: $1,4,K$；$s^3$: $2,4$；$s^2$: $\frac{2\cdot4-1\cdot4}{2}=2,\ \frac{2K-0}{2}=K$；$s^1$: $\frac{2\cdot4-2K}{2}=4-K$；$s^0$: $K$。需 $K>0$ 且 $4-K>0$ ⟹ <b>$0<K<4$</b>。</p>
+<a class="btn calc" href="calc.html?routh=s%5E4%2B2s%5E3%2B4s%5E2%2B4s%2BK&param=K#routh">计算器</a></div></details></div>
+
+<!-- ============ L11 ============ -->
+<h2 id="L11" data-kw="kharitonov robust stability interval polynomial internal stability pi controller"><span class="lno">L11</span>Kharitonov、闭环内稳定、PI 稳定区域 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<h3 id="L11-kh" data-toc data-short="Kharitonov 定理" data-kw="kharitonov interval polynomial robust">鲁棒稳定：Kharitonov 定理</h3>
+<p>区间多项式 $\mathcal P=\{a_0s^n+a_1s^{n-1}+\dots+a_n:\ a_i\in[\underline a_i,\overline a_i]\}$。</p>
+<div class="key"><span class="lbl">定理</span> $\mathcal P$ 中所有成员稳定 ⟺ 下面 4 个多项式稳定：
+$$\begin{aligned}a_1(s)&=\underline a_0s^n+\underline a_1s^{n-1}+\overline a_2s^{n-2}+\overline a_3s^{n-3}+\underline a_4s^{n-4}+\cdots\\a_2(s)&=\underline a_0s^n+\overline a_1s^{n-1}+\overline a_2s^{n-2}+\underline a_3s^{n-3}+\underline a_4s^{n-4}+\cdots\\a_3(s)&=\overline a_0s^n+\underline a_1s^{n-1}+\underline a_2s^{n-2}+\overline a_3s^{n-3}+\overline a_4s^{n-4}+\cdots\\a_4(s)&=\overline a_0s^n+\overline a_1s^{n-1}+\underline a_2s^{n-2}+\underline a_3s^{n-3}+\overline a_4s^{n-4}+\cdots\end{aligned}$$
+记忆：<b>LLUU, LUUL, ULLU, UULL</b>，4 位一循环。</div>
+<div class="ex"><span class="lbl">例（总览）</span> $\{s^4+a_1s^3+a_2s^2+a_3s+a_4:\ a_1\in[3,4],a_2\in[3,4],a_3\in[2,3],a_4\in[0.5,1]\}$ 是否全部稳定？
+<details class="sol"><summary>解答</summary><div class="body">
+$$a_1=s^4+3s^3+4s^2+3s+0.5,\quad a_2=s^4+4s^3+4s^2+2s+0.5,\quad a_3=s^4+3s^3+3s^2+3s+1,\quad a_4=s^4+4s^3+3s^2+2s+1$$
+<p>四个都用 Routh 验证稳定，所以 $\mathcal P$ 中所有多项式都稳定。（例：$a_3$ 的 Routh 第一列为 $1,3,2,1.5,1$。）</p>
+<a class="btn calc" href="calc.html?kh=1,1;3,4;3,4;2,3;0.5,1#khar">计算器</a></div></details></div>
+
+<h3 id="L11-int" data-toc data-short="内稳定定理（总览）" data-kw="internal stability gang of four characteristic polynomial cancellation">闭环内稳定 <span class="tags"><span class="tag hot">总览</span></span></h3>
+<div class="key"><span class="lbl">定义</span> 稳定化反馈系统<b>内稳定</b>：从 $w_1,w_2$ 到 $u_1,u_2,y_1,y_2$ 的 8 个传递函数都稳定。等价于 gang of four 都稳定。</div>
+<p>设 $P=\frac{b}{a}$，$C=\frac{q}{p}$，$a,b$ 互质，$p,q$ 互质，则</p>
+$$\mathrm{GoF}(s)=\begin{bmatrix}\frac{1}{1+PC}&\frac{C}{1+PC}\\ \frac{P}{1+PC}&\frac{PC}{1+PC}\end{bmatrix}=\frac{1}{a(s)p(s)+b(s)q(s)}\begin{bmatrix}a p&a q\\ b p&b q\end{bmatrix}$$
+<div class="key"><span class="lbl">定理</span> $P,C$ proper，$1+P(\infty)C(\infty)\ne0$，以下等价：
+<ol><li>闭环内稳定；</li><li><b>特征多项式 $c(s)=a(s)p(s)+b(s)q(s)$ 稳定</b>；</li><li>构成 $PC$ 时<b>没有不稳定的零极点对消</b>，并且 gang of four 中任意一个稳定。</li></ol></div>
+<div class="ex"><span class="lbl">例</span> 4 个内稳定例子：
+<details class="sol"><summary>展开</summary><div class="body">
+<ol>
+<li>$P=\frac{s-1}{s(s-2)},\ C=\frac{33s-6}{s-25}$：$P,C$ 都不稳定，但 $c=s(s-2)(s-25)+(s-1)(33s-6)=s^3+6s^2+11s+6$ 稳定 ⟹ <b>内稳定</b>。</li>
+<li>$P=\frac{1}{(s+1)^3},\ C=10$：$P,C$ 都稳定，但 $c=(s+1)^3+10=s^3+3s^2+3s+11$，Routh $s^1$ 行 $\frac{9-11}{3}<0$ ⟹ <b>不稳定</b>。</li>
+<li>$P=\frac{1}{s-1},\ C=\frac{s-1}{s+1}$：$\frac1{1+PC}=\frac{s+1}{s+2}$，$\frac{C}{1+PC}=\frac{s-1}{s+2}$，$\frac{PC}{1+PC}=\frac1{s+2}$ 都稳定，但 $\frac{P}{1+PC}=\frac{s+1}{(s-1)(s+2)}$ 不稳定 ⟹ <b>不稳定</b>（$s=1$ 处不稳定对消）。</li>
+<li>$P=\frac{s-2}{s+1},\ C=\frac1{s-2}$：$\frac{C}{1+PC}=\frac{s+1}{(s+2)(s-2)}$ 不稳定 ⟹ <b>不稳定</b>（又一个不稳定对消）。</li>
+<li>$P=\frac{s+2}{s+1},\ C=-1$：$\frac{P}{1+PC}=-s-2$，$\frac{C}{1+PC}=s+1$，<b>non-proper</b> ⟹ 不稳定。这时 $ap+bq=-1$ 看似“稳定”，但阶数降到了 $\deg(ap)$ 以下，因为 $1+P(\infty)C(\infty)=0$，违反定理前提。</li>
+</ol>
+<a class="btn calc" href="calc.html?ib=1&ia=s-1&iq=s-1&ip=s%2B1#internal">计算器（例 3）</a></div></details></div>
+
+<h3 id="L11-pi" data-toc data-short="PI 稳定区域" data-kw="pi controller proportional integral stability region unity feedback">Unity feedback + PI：两参数稳定区域</h3>
+<p>$P=\frac{10}{(s+1)(s+2)}$，$C=K_P+\frac{K_I}{s}$。$C$ proper、$P$ strictly proper ⟹ 适定，只需检查特征多项式：</p>
+$$d(s)=s(s+1)(s+2)+10(K_Ps+K_I)=s^3+3s^2+(2+10K_P)s+10K_I$$
+<p>Routh：$s^3$: $1,\ 2+10K_P$；$s^2$: $3,\ 10K_I$；$s^1$: $\frac{3(2+10K_P)-10K_I}{3}$；$s^0$: $10K_I$。</p>
+<div class="key"><span class="lbl">结果</span> $K_I>0$ 且 $3+15K_P-5K_I>0$，即 $K_P>\frac{K_I}{3}-0.2$。在 $(K_I,K_P)$ 平面上是 $K_I>0$ 且在直线 $K_P=\frac{K_I-0.6}{3}$（过 $(0,-0.2)$ 和 $(0.6,0)$）上方的区域。<a class="btn calc" href="calc.html?preset=pi#region">画图</a></div>
+
+<!-- ============ L12 ============ -->
+<h2 id="L12" data-kw="pole placement diophantine equation proper controller"><span class="lno">L12</span>极点配置：proper 控制器 <span class="tags"><span class="tag hot">总览</span></span></h2>
+<p>镇定控制器设计：给定 $P$，设计 $C$ 使闭环<b>内稳定</b>。<b>极点配置</b>：设计 $C$，使闭环极点（= 特征多项式的根）落在指定的期望位置。</p>
+<div class="key"><span class="lbl">设定</span> $P=\dfrac{b(s)}{a(s)}=\dfrac{b_0s^n+\dots+b_n}{a_0s^n+\dots+a_n}$（$a_0\ne0$，互质；strictly proper 时 $b_0=0$），$C=\dfrac{q(s)}{p(s)}=\dfrac{q_0s^m+\dots+q_m}{p_0s^m+\dots+p_m}$（$p_0\ne0$）。
+$$c(s)=a(s)p(s)+b(s)q(s)=c_0s^{n+m}+c_1s^{n+m-1}+\dots+c_{n+m}\qquad(\text{Diophantine 方程})$$
+步骤：指定 $n+m$ 阶稳定的 $c(s)$ ⟹ 解出 $p,q$ ⟹ $C=q/p$。</div>
+<h3 id="L12-syl" data-toc data-short="Toeplitz / Sylvester 矩阵" data-kw="sylvester resultant toeplitz matrix">Toeplitz 与 Sylvester 矩阵</h3>
+<p>$T(a,k)$：$(n+k)\times k$，第 $j$ 列是 $[a_0,\dots,a_n]^T$ 往下平移 $j-1$ 格（每条对角线上元素相同）。$S(a,b,k)=[T(a,k)\ \ T(b,k)]$，大小 $(n+k)\times2k$。</p>
+<ul>
+<li>$S(a,b,n)$ 非奇异 ⟺ $a,b$ 互质。</li>
+<li>$S(a,b,m)$：$m<n$ 时列满秩，$m>n$ 时行满秩。</li>
+</ul>
+<div class="key"><span class="lbl">比较系数</span> $$S(a,b,m+1)\begin{bmatrix}p_0\\ \vdots\\ p_m\\ q_0\\ \vdots\\ q_m\end{bmatrix}=\begin{bmatrix}c_0\\c_1\\ \vdots\\ c_{n+m}\end{bmatrix}$$
+方程 $n+m+1$ 个，未知数 $2m+2$ 个：$m+1<n$ 无解（一般情况下）；$m+1=n$ 唯一解；$m+1>n$ 无穷多解。<br><b>结论</b>：存在 $m$ 阶 proper 控制器把闭环极点任意配置到 $n+m$ 个位置 ⟺ $m\ge n-1$。</div>
+<div class="ex"><span class="lbl">例（总览）</span> $P=\frac{s-1}{s(s-2)}$，设计<b>一阶</b>控制器使闭环极点为 $-1,-2,-3$。
+<details class="sol"><summary>解答</summary><div class="body">
+<p>$n=2$，$m=1=n-1$ ⟹ 唯一解。$c(s)=(s+1)(s+2)(s+3)=s^3+6s^2+11s+6$。$a=s^2-2s+0$，$b=0s^2+s-1$：</p>
+$$\begin{bmatrix}1&0&0&0\\-2&1&1&0\\0&-2&-1&1\\0&0&0&-1\end{bmatrix}\begin{bmatrix}p_0\\p_1\\q_0\\q_1\end{bmatrix}=\begin{bmatrix}1\\6\\11\\6\end{bmatrix}\ \Longrightarrow\ p_0=1,\ p_1=-25,\ q_0=33,\ q_1=-6$$
+<p>也可以直接展开比较系数：$s(s-2)(p_0s+p_1)+(s-1)(q_0s+q_1)$ ⟹ $p_0=1$，$-2p_0+p_1+q_0=6$，$-2p_1-q_0+q_1=11$，$-q_1=6$。</p>
+<p>$C(s)=\dfrac{33s-6}{s-25}$。<b>Stable controller? 不是</b>，它有极点 $25$，但闭环稳定。</p>
+<a class="btn calc" href="calc.html?pb=s-1&pa=s(s-2)&pm=1&pc=-1,-2,-3#pole">计算器</a></div></details></div>
+<div class="ex"><span class="lbl">例：更低阶也可能做到</span> $P=\frac1{s(s+2)}$（$n=2$），用零阶控制器 $C=\frac{q_0}{p_0}$ 把极点放到 $-1,-1$：$c=s(s+2)p_0+q_0=(s+1)^2$ ⟹ $p_0=q_0=1$，$C=1$。这里是特殊的 $c(s)$ 让方程组相容（方程个数多于未知数，但恰好不矛盾）。</div>
+
+<!-- ============ L13 ============ -->
+<h2 id="L13" data-kw="strictly proper controller inverted pendulum ipendulum diso"><span class="lno">L13</span>严格真控制器 &amp; 倒立摆案例</h2>
+<h3 id="L13-sp" data-toc data-short="strictly proper 控制器" data-kw="strictly proper controller pole placement">strictly proper 控制器</h3>
+<p>$C=\dfrac{q_1s^{m-1}+\dots+q_m}{p_0s^m+\dots+p_m}$（$q_0=0$）。特征多项式仍是 $c=ap+bq$。比较最高次得 $p_0=c_0/a_0$，其余：</p>
+$$S(a,b,m)\begin{bmatrix}p_1\\ \vdots\\ p_m\\ q_1\\ \vdots\\ q_m\end{bmatrix}=\begin{bmatrix}c_1-a_1c_0/a_0\\ \vdots\\ c_n-a_nc_0/a_0\\ c_{n+1}\\ \vdots\\ c_{n+m}\end{bmatrix}$$
+<div class="key"><span class="lbl">结论</span> $m=n$ 唯一解，$m>n$ 无穷多解；存在 $m$ 阶 strictly proper 控制器任意配置 $n+m$ 个闭环极点 ⟺ <b>$m\ge n$</b>。</div>
+<div class="ex"><span class="lbl">例</span> $P=\frac{s-1}{s(s-2)}$，设计<b>二阶 strictly proper</b> 控制器，闭环极点 $-1\pm j,\ -2\pm2j$。
+<details class="sol"><summary>解答</summary><div class="body">
+<p>$c=(s^2+2s+2)(s^2+4s+8)=s^4+6s^3+18s^2+24s+16$。$C=\frac{q_1s+q_2}{p_0s^2+p_1s+p_2}$，$p_0=1$：</p>
+$$\begin{bmatrix}1&0&0&0\\-2&1&1&0\\0&-2&-1&1\\0&0&0&-1\end{bmatrix}\begin{bmatrix}p_1\\p_2\\q_1\\q_2\end{bmatrix}=\begin{bmatrix}6-(-2)\\18-0\\24\\16\end{bmatrix}\Longrightarrow p_1=8,\ p_2=-74,\ q_1=108,\ q_2=-16$$
+<p>$C=\dfrac{108s-16}{s^2+8s-74}$：<b>控制器不稳定</b>（$s^2+8s-74$ 有正根），但闭环稳定。</p>
+<a class="btn calc" href="calc.html?pb=s-1&pa=s(s-2)&pm=2&strict=1&pc=-1%C2%B1j1,-2%C2%B1j2#pole">计算器</a></div></details></div>
+
+<h3 id="L13-ip" data-toc data-short="倒立摆 iPendulum" data-kw="inverted pendulum ipendulum diso controller cart">倒立摆（iPendulum）</h3>
+<p>参数：小车质量 $M_c$，摆杆（均匀）质量 $M_p$，长度 $L$；输入力 $f$，输出小车位置 $x$ 和摆角 $\theta$（SIDO）。</p>
+<ul>
+<li>水平方向：$f=M_c\ddot x+M_p\frac{d^2}{dt^2}\big[x-\frac L2\sin\theta\big]=(M_p+M_c)\ddot x-\frac{M_pL}{2}\ddot\theta\cos\theta+\frac{M_pL}{2}\dot\theta^2\sin\theta$。</li>
+<li>绕支点转动：$J=\int_0^L\ell^2\frac{M_p}{L}d\ell=\frac13M_pL^2$，$J\ddot\theta=M_p\ddot x\cos\theta\frac L2+M_pg\sin\theta\frac L2$ ⟹ $\frac23L\ddot\theta-\ddot x\cos\theta-g\sin\theta=0$。</li>
+<li>在 $x=\dot x=\theta=\dot\theta=0$ 线性化：$(M_p+M_c)\ddot x-\frac12M_pL\ddot\theta=f$，$-\ddot x+\frac23L\ddot\theta-g\theta=0$。</li>
+</ul>
+$$\begin{bmatrix}X\\ \Theta\end{bmatrix}=\frac{1}{s^2\big[(M_p+4M_c)Ls^2-6(M_p+M_c)g\big]}\begin{bmatrix}4Ls^2-6g\\6s^2\end{bmatrix}F(s)$$
+<p>$M_c=1,\ M_p=2,\ L=1$：$\boldsymbol P=\dfrac{1}{s^2(s^2-3g)}\begin{bmatrix}\frac23s^2-g\\s^2\end{bmatrix}$，四阶 SIDO，极点 $0,0,\pm\sqrt{3g}$，高度不稳定。</p>
+<ul>
+<li><b>只用 $\theta$ 不能镇定</b>：$P_\theta=\frac{1}{s^2-3g}$ 约分后只剩一个不稳定极点，双重 0 极点藏起来了。</li>
+<li><b>只用 $x$ 可以</b>：$P_x=\frac{\frac23s^2-g}{s^2(s^2-3g)}$ 含所有不稳定极点。三阶控制器把极点配到 $-6,\ -0.5\pm4j,\ -2\pm2.5j,\ -8.5\pm4.5j$ ⟹ $C_x=\frac{2705s^3+13640s^2-7567s-9433}{s^3+28s^2-1434s-5963}$：系数极大且控制器不稳定，不是好设计。</li>
+<li><b>用摆尖位置</b> $z=x-L\sin\theta\approx x-L\theta$：$P_z=P_x-P_\theta=-\frac{\frac13s^2+g}{s^2(s^2-3g)}$，同样的极点 ⟹ $C_z=-\frac{966.5s^3+6337s^2+7567s+9433}{s^3+28s^2+47.25s+1015}$：控制器稳定，系数小，更好。</li>
+<li><b>DISO 控制器</b> $\boldsymbol C=\frac{[q_x\ \ q_\theta]}{p}$，$c=ap+b_xq_x+b_\theta q_\theta$。零阶只有 3 个参数，但 $c$ 有 5 个系数，做不到；一阶有 6 个参数，配 $-6,-2\pm2.5j,-8.5\pm4.5j$ ⟹ $\boldsymbol C=\frac{[-430s-580.5\ \ \ 612.9s+2750]}{s+27}$：阶数最低，性能最好。</li>
+</ul>
+<p class="small muted">这个 DISO 方程不是标准的 Diophantine 方程，但解法相同：比较系数解线性方程组。</p>
+
+<div class="foot">讲义来源：ECE3250 L1–L13（Qiu &amp; Zhou 课件，部分页有老师手写补充）。</div>
+</main>
+</div>
+</body>
+</html>

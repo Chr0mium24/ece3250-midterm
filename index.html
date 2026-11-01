@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>速览 Overview · ECE3250 期中速成</title>
+<script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
+<link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=1">
+<script defer src="assets/vendor/katex/katex.min.js"></script>
+<script defer src="assets/vendor/katex/auto-render.min.js"></script>
+<script defer src="assets/search-index.js?v=1"></script>
+<script defer src="assets/ui.js?v=1"></script>
+</head>
+<body>
+<header id="topnav"></header>
+<main class="wrap">
+
+<h1><span class="zh">ECE3250 期中速成</span><span class="en">ECE3250 Midterm Crash Review</span>
+<small><span class="zh">教材 Qiu &amp; Zhou《Introduction to Feedback Control》· 范围 L1–L13：建模 → 拉氏变换 → 传递函数 → 方框图 → 稳定性 → 极点配置</span><span class="en">Textbook: Qiu &amp; Zhou, <i>Introduction to Feedback Control</i> · Scope L1–L13: modeling → Laplace → transfer functions → block diagrams → stability → pole placement</span></small></h1>
+<div class="hero"><div class="facts">
+  <span class="fact"><span class="zh">考试 <b>11 月 2 日（周一）</b> 课堂考</span><span class="en">In-class exam <b>Mon, Nov 2</b></span></span>
+  <span class="fact"><span class="zh">占总评 <b>20%</b></span><span class="en">Weight <b>20%</b></span></span>
+  <span class="fact"><span class="zh">范围：<b>到 pole placement design 为止</b></span><span class="en">Covers <b>everything up to pole placement design</b></span></span>
+  <span class="fact"><span class="zh">依据：13 讲讲义 + midterm 总览 + HW1/HW2</span><span class="en">Sources: L1–L13 slides, midterm overview deck, HW1/HW2</span></span>
+</div></div>
+
+<div class="tip"><span class="lbl"><span class="zh">怎么用</span><span class="en">How to use</span></span>
+<span class="zh"><b>速览</b>（本页）= 考点地图 + 必背公式 + 易错点；<a href="lectures.html">讲义</a> = 逐讲精讲和课件例题；<a href="homework.html">作业</a> = HW1/HW2 完整解答；<a href="methods.html">题目处理</a> = 每类题的识别信号、步骤和答题模板；<a href="calc.html">计算器</a> = 按作业题型做的专用计算器。右上角可以搜索（<kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>，支持错字和中英文），也可以切换 中 / EN / 中+EN 对照。</span>
+<span class="en"><b>Overview</b> (this page) = topic map + must-know formulas + common traps; <a href="lectures.html">Lectures</a> = lecture-by-lecture notes with slide examples; <a href="homework.html">Homework</a> = full HW1/HW2 solutions; <a href="methods.html">Problem types</a> = how to recognize and solve each problem type; <a href="calc.html">Calculators</a> = calculators for the homework problem types. Use the search box (<kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>, typo-tolerant, English or Chinese) and the 中 / EN / 中+EN switch at the top right.</span>
+</div>
+
+<h2 id="plan" data-kw="plan schedule 复习计划 路线"><span class="zh">考前路线（约 3 小时）</span><span class="en">Last-day plan (~3 hours)</span></h2>
+<ol class="steps">
+  <li><span class="zh"><b>30 分钟</b>：把本页「必背公式」和「易错点」过两遍。老师的 midterm 总览 PPT 只挑了这几块：电路建模、线性化（MagLev）、状态空间→传递函数、方框图化简、Routh、Kharitonov、内稳定（gang of four）、极点配置。</span><span class="en"><b>30 min</b>: read the must-know formulas and the traps on this page twice. The instructor's midterm overview deck covers exactly: circuit modeling, linearization (MagLev), state space → transfer function, block-diagram reduction, Routh, Kharitonov, internal stability (gang of four), and pole placement.</span></li>
+  <li><span class="zh"><b>60 分钟</b>：<a href="methods.html">题目处理</a>里每类题做一个例子，重点是 <a href="methods.html#t-routh-k">Routh 求 K 范围</a>、<a href="methods.html#t-block">方框图化简</a>、<a href="methods.html#t-pole">极点配置</a>、<a href="methods.html#t-internal">内稳定</a>、<a href="methods.html#t-linear">线性化</a>。</span><span class="en"><b>60 min</b>: do one example of each <a href="methods.html">problem type</a>, especially <a href="methods.html#t-routh-k">Routh K-range</a>, <a href="methods.html#t-block">block diagrams</a>, <a href="methods.html#t-pole">pole placement</a>, <a href="methods.html#t-internal">internal stability</a> and <a href="methods.html#t-linear">linearization</a>.</span></li>
+  <li><span class="zh"><b>60 分钟</b>：不看答案重做 <a href="homework.html">HW1 / HW2</a>，用<a href="calc.html">计算器</a>核对每一步数字。</span><span class="en"><b>60 min</b>: redo <a href="homework.html">HW1 / HW2</a> without looking, then check every number with the <a href="calc.html">calculators</a>.</span></li>
+  <li><span class="zh"><b>30 分钟</b>：看<a href="lectures.html">讲义</a>里标 <span class="tag hot">总览</span> 的课件例题，课件原题最可能改个数字直接考。</span><span class="en"><b>30 min</b>: review the slide examples tagged <span class="tag hot">overview</span> in the <a href="lectures.html">lectures</a> — they are the likeliest to reappear with new numbers.</span></li>
+</ol>
+
+<h2 id="map" data-kw="topic map 考点 地图"><span class="zh">考点地图</span><span class="en">Topic map</span></h2>
+<div class="grid">
+  <div class="card">
+    <h3><span class="zh">① 状态空间建模</span><span class="en">① State-space modeling</span> <span class="tags"><span class="tag">L2–L4</span><span class="tag hot">★</span></span></h3>
+    <p>$\dot x = Ax+bu,\ y=cx+du$</p>
+    <p class="zh">状态选<b>储能变量</b>：电容电压、电感电流、位置和速度。高阶 ODE 取 $x_1=x,\ x_2=\dot x,\dots$。电路用 KCL + KVL，机械用牛顿第二定律。</p>
+    <p class="en">Choose <b>energy-storage variables</b> as states: capacitor voltages, inductor currents, positions and velocities. For an $n$-th order ODE take $x_1=x,\ x_2=\dot x,\dots$. Circuits: KCL + KVL; mechanics: Newton's second law.</p>
+    <div class="links"><a href="lectures.html#L3">L3</a><a href="lectures.html#L4">L4</a><a href="methods.html#t-model"><span class="zh">题型：建模</span><span class="en">Type: modeling</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">② 线性化</span><span class="en">② Linearization</span> <span class="tags"><span class="tag">L4–L5</span><span class="tag hot">★</span></span></h3>
+    <p>$0=f(x_0,u_0),\ y_0=g(x_0,u_0);\quad A=\frac{\partial f}{\partial x}\big|_0,\ b=\frac{\partial f}{\partial u}\big|_0,\ c=\frac{\partial g}{\partial x}\big|_0,\ d=\frac{\partial g}{\partial u}\big|_0$</p>
+    <p class="zh">先求工作点，再求 Jacobian，最后写成偏差变量 $\tilde x=x-x_0$ 的形式。</p>
+    <p class="en">Find the operating point first, then the Jacobians, and write the model in deviation variables $\tilde x=x-x_0$.</p>
+    <div class="links"><a href="lectures.html#L5">L5</a><a href="methods.html#t-linear"><span class="zh">题型：线性化</span><span class="en">Type: linearization</span></a><a href="homework.html#hw1-24">HW1 2.4</a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">③ 拉氏变换 / 部分分式</span><span class="en">③ Laplace / partial fractions</span> <span class="tags"><span class="tag">L5–L6</span></span></h3>
+    <p>$c_i=\lim_{s\to p_i}(s-p_i)G(s);\quad c_k=\frac{1}{(r-k)!}\lim_{s\to p}\frac{d^{r-k}}{ds^{r-k}}\big[(s-p)^rG\big]$</p>
+    <p class="zh">第二个公式用于 $r$ 重极点、$\frac{c_k}{(s-p)^k}$ 项。共轭极点：$c_3=\bar c_2$。</p>
+    <p class="en">The second formula is for an $r$-fold pole (coefficient of $\frac{1}{(s-p)^k}$). Conjugate poles: $c_3=\bar c_2$.</p>
+    <div class="links"><a href="lectures.html#L6">L6</a><a href="methods.html#t-pf"><span class="zh">题型：逆变换</span><span class="en">Type: inverse Laplace</span></a><a href="calc.html#pf"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">④ 传递函数</span><span class="en">④ Transfer functions</span> <span class="tags"><span class="tag">L7</span><span class="tag hot">★</span></span></h3>
+    <p>$G(s)=c(sI-A)^{-1}b+d,\quad \text{DC gain}=G(0)$</p>
+    <p class="zh">proper：$\deg b\le\deg a$；strictly proper：$<$；bi-proper：$=$。终值定理 $y(\infty)=\lim_{s\to0}sY(s)$ 要求 $sY(s)$ 的极点全在开左半平面。</p>
+    <p class="en">Proper: $\deg b\le\deg a$; strictly proper: $<$; bi-proper: $=$. FVT $y(\infty)=\lim_{s\to0}sY(s)$ needs all poles of $sY(s)$ in the open left half-plane.</p>
+    <div class="links"><a href="lectures.html#L7">L7</a><a href="methods.html#t-ss2tf"><span class="zh">题型：ss→tf</span><span class="en">Type: ss→tf</span></a><a href="calc.html#ss"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑤ 方框图化简</span><span class="en">⑤ Block-diagram reduction</span> <span class="tags"><span class="tag">L7–L8</span><span class="tag hot">★</span></span></h3>
+    <p>$G_2G_1,\quad G_1+G_2,\quad \dfrac{G}{1\mp GH}$</p>
+    <p class="zh">依次是串联、并联、反馈（负反馈分母为 $1+GH$）。移动求和点或引出点时补一个 $G$ 或 $1/G$。复杂图：先化简内环，再把求和点移到一起。</p>
+    <p class="en">Series, parallel, feedback (negative feedback → denominator $1+GH$). Moving a summing or pickoff point inserts a $G$ or $1/G$. For big diagrams: close inner loops first, then merge summing junctions.</p>
+    <div class="links"><a href="lectures.html#L8">L8</a><a href="methods.html#t-block"><span class="zh">题型：方框图</span><span class="en">Type: block diagram</span></a><a href="homework.html#hw1-210">HW1 2.10</a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑥ 实现</span><span class="en">⑥ Realization</span> <span class="tags"><span class="tag">L8–L9</span></span></h3>
+    <p class="zh">控制器型：$A$ 第一行 $\big[-\tfrac{a_1}{a_0}\cdots-\tfrac{a_n}{a_0}\big]$，下面是单位次对角，$b=[\tfrac1{a_0},0,\dots,0]^T$，$c_k=b_k-b_0\tfrac{a_k}{a_0}$，$d=\tfrac{b_0}{a_0}$。观测器型是它的“转置”。</p>
+    <p class="en">Controller form: first row of $A$ is $\big[-\tfrac{a_1}{a_0}\cdots-\tfrac{a_n}{a_0}\big]$, ones on the subdiagonal, $b=[\tfrac1{a_0},0,\dots,0]^T$, $c_k=b_k-b_0\tfrac{a_k}{a_0}$, $d=\tfrac{b_0}{a_0}$. Observer form is its “transpose”.</p>
+    <div class="links"><a href="lectures.html#L8-real">L8</a><a href="methods.html#t-real"><span class="zh">题型：实现</span><span class="en">Type: realization</span></a><a href="calc.html#ss"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑦ BIBO 稳定</span><span class="en">⑦ BIBO stability</span> <span class="tags"><span class="tag">L9–L10</span></span></h3>
+    <p>$\int_0^\infty|g(t)|\,dt<\infty\iff G\text{ proper},\ \operatorname{Re}p_i<0$</p>
+    <p class="zh">证不稳定只要举一个反例（常用阶跃 $\sigma(t)$）；证稳定要对所有有界输入成立。</p>
+    <p class="en">To show instability give one counterexample (usually the step $\sigma(t)$); stability must hold for every bounded input.</p>
+    <div class="links"><a href="lectures.html#L9">L9</a><a href="lectures.html#L10">L10</a><a href="methods.html#t-bibo"><span class="zh">题型：BIBO</span><span class="en">Type: BIBO</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑧ Routh 判据</span><span class="en">⑧ Routh criterion</span> <span class="tags"><span class="tag">L10–L11</span><span class="tag hot">★</span></span></h3>
+    <p>$r_{ij}=-\dfrac{1}{r_{(i-1)0}}\det\begin{bmatrix}r_{(i-2)0}&r_{(i-2)(j+1)}\\ r_{(i-1)0}&r_{(i-1)(j+1)}\end{bmatrix}$</p>
+    <p class="zh">稳定 ⟺ 第一列全 $>0$ ⟺ 全表 $>0$。<b>一出现 0 或负数就判不稳定。</b></p>
+    <p class="en">Stable ⟺ first column all $>0$ ⟺ whole table $>0$. <b>Any zero or negative entry ⟹ not stable.</b></p>
+    <div class="links"><a href="lectures.html#L10">L10</a><a href="methods.html#t-routh-k"><span class="zh">题型：求 K 范围</span><span class="en">Type: K range</span></a><a href="calc.html#routh"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑨ Kharitonov</span><span class="en">⑨ Kharitonov</span> <span class="tags"><span class="tag">L11</span><span class="tag hot">★</span></span></h3>
+    <p class="zh">区间多项式全部成员稳定 ⟺ 4 个顶点多项式稳定。从最高次 $a_0$ 开始，上下界排列 <b>LLUU / LUUL / ULLU / UULL</b>（L = 下界，U = 上界，4 位循环）。</p>
+    <p class="en">Every member of an interval polynomial is stable ⟺ four vertex polynomials are stable. Starting from $a_0$, bounds follow <b>LLUU / LUUL / ULLU / UULL</b> (L = lower, U = upper, period 4).</p>
+    <div class="links"><a href="lectures.html#L11-kh">L11</a><a href="methods.html#t-khar"><span class="zh">题型：鲁棒稳定</span><span class="en">Type: robust stability</span></a><a href="calc.html#khar"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑩ 内稳定</span><span class="en">⑩ Internal stability</span> <span class="tags"><span class="tag">L11–L12</span><span class="tag hot">★</span></span></h3>
+    <p>$P=\tfrac{b}{a},\ C=\tfrac{q}{p},\ 1+P(\infty)C(\infty)\ne0:\quad \text{internally stable}\iff ap+bq \text{ stable}$</p>
+    <p class="zh">等价于：$PC$ 中没有不稳定零极点对消，且 gang of four 中任意一个稳定。</p>
+    <p class="en">Equivalently: no unstable pole/zero cancellation in $PC$ and any one of the gang of four is stable.</p>
+    <div class="links"><a href="lectures.html#L11-int">L11</a><a href="methods.html#t-internal"><span class="zh">题型：内稳定</span><span class="en">Type: internal stability</span></a><a href="calc.html#internal"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑪ 极点配置</span><span class="en">⑪ Pole placement</span> <span class="tags"><span class="tag">L12–L13</span><span class="tag hot">★</span></span></h3>
+    <p>$a(s)p(s)+b(s)q(s)=c(s),\qquad S(a,b,m+1)\begin{bmatrix}p\\q\end{bmatrix}=c$</p>
+    <p class="zh">$m$ 阶 proper 控制器能任意配置 ⟺ $m\ge n-1$；strictly proper ⟺ $m\ge n$。</p>
+    <p class="en">An $m$-th order proper controller can assign all closed-loop poles ⟺ $m\ge n-1$; strictly proper ⟺ $m\ge n$.</p>
+    <div class="links"><a href="lectures.html#L12">L12–13</a><a href="methods.html#t-pole"><span class="zh">题型：极点配置</span><span class="en">Type: pole placement</span></a><a href="calc.html#pole"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+  <div class="card">
+    <h3><span class="zh">⑫ 两参数稳定区域</span><span class="en">⑫ Two-parameter stability region</span> <span class="tags"><span class="tag">L11</span><span class="tag">HW2</span></span></h3>
+    <p>$s^3+3s^2+(2+10K_P)s+10K_I:\quad K_I>0,\ 3+15K_P-5K_I>0$</p>
+    <p class="zh">Routh 第一列 $>0$ 列出不等式，画边界曲线。HW2 3.22 在 $(K,\tau)$ 平面画区域。</p>
+    <p class="en">Write the Routh first-column inequalities and draw the boundary curves. HW2 3.22 asks for the region in the $(K,\tau)$ plane.</p>
+    <div class="links"><a href="methods.html#t-region"><span class="zh">题型：二参数</span><span class="en">Type: 2-parameter</span></a><a href="homework.html#hw2-322">HW2 3.22</a><a href="calc.html#region"><span class="zh">计算器</span><span class="en">Calculator</span></a></div>
+  </div>
+</div>
+
+<h2 id="formulas" data-kw="formula sheet cheat sheet 公式 拉氏变换表 laplace table properties"><span class="zh">必背公式</span><span class="en">Must-know formulas</span></h2>
+
+<h3 id="f-laplace" data-kw="laplace table 拉普拉斯 变换表"><span class="zh">拉氏变换表（单边信号，$\sigma(t)$ 为单位阶跃）</span><span class="en">Laplace transform table (one-sided signals, $\sigma(t)$ = unit step)</span></h3>
+<div class="tbl-wrap"><table>
+<tr><th>$x(t)$</th><th>$X(s)$</th><th>ROC</th><th>$x(t)$</th><th>$X(s)$</th><th>ROC</th></tr>
+<tr><td>$\delta(t)$</td><td>$1$</td><td>$\mathbb C$</td><td>$e^{-\alpha t}\sigma(t)$</td><td>$\dfrac{1}{s+\alpha}$</td><td>$\operatorname{Re}s>-\alpha$</td></tr>
+<tr><td>$\sigma(t)$</td><td>$\dfrac1s$</td><td>$\operatorname{Re}s>0$</td><td>$\dfrac{t^n}{n!}e^{-\alpha t}\sigma(t)$</td><td>$\dfrac{1}{(s+\alpha)^{n+1}}$</td><td>$\operatorname{Re}s>-\alpha$</td></tr>
+<tr><td>$t\,\sigma(t)$</td><td>$\dfrac1{s^2}$</td><td>$\operatorname{Re}s>0$</td><td>$\sin\omega t\,\sigma(t)$</td><td>$\dfrac{\omega}{s^2+\omega^2}$</td><td>$\operatorname{Re}s>0$</td></tr>
+<tr><td>$\dfrac{t^2}{2}\sigma(t)$</td><td>$\dfrac1{s^3}$</td><td>$\operatorname{Re}s>0$</td><td>$\cos\omega t\,\sigma(t)$</td><td>$\dfrac{s}{s^2+\omega^2}$</td><td>$\operatorname{Re}s>0$</td></tr>
+<tr><td>$\dfrac{t^n}{n!}\sigma(t)$</td><td>$\dfrac1{s^{n+1}}$</td><td>$\operatorname{Re}s>0$</td><td>$e^{-\alpha t}\sin\omega t\,\sigma(t)$</td><td>$\dfrac{\omega}{(s+\alpha)^2+\omega^2}$</td><td>$\operatorname{Re}s>-\alpha$</td></tr>
+<tr><td colspan="3"></td><td>$e^{-\alpha t}\cos\omega t\,\sigma(t)$</td><td>$\dfrac{s+\alpha}{(s+\alpha)^2+\omega^2}$</td><td>$\operatorname{Re}s>-\alpha$</td></tr>
+</table></div>
+
+<h3 id="f-props" data-kw="laplace properties 性质 微分 积分 卷积 时延 频移 final value"><span class="zh">拉氏变换性质</span><span class="en">Laplace transform properties</span></h3>
+<div class="tbl-wrap"><table>
+<tr><th><span class="zh">性质</span><span class="en">Property</span></th><th><span class="zh">公式</span><span class="en">Formula</span></th><th><span class="zh">性质</span><span class="en">Property</span></th><th><span class="zh">公式</span><span class="en">Formula</span></th></tr>
+<tr><td><span class="zh">线性</span><span class="en">Linearity</span></td><td>$\L[\alpha x+\beta y]=\alpha X+\beta Y$</td><td><span class="zh">微分</span><span class="en">Derivative</span></td><td>$\L[\dot x]=sX(s)$, $\L[x^{(n)}]=s^nX(s)$</td></tr>
+<tr><td><span class="zh">频移</span><span class="en">Frequency shift</span></td><td>$\L[e^{-\alpha t}x(t)]=X(s+\alpha)$</td><td><span class="zh">积分</span><span class="en">Integration</span></td><td>$\L\big[\int_{-\infty}^t x\,d\tau\big]=\dfrac{X(s)}{s}$</td></tr>
+<tr><td><span class="zh">时延</span><span class="en">Time delay</span></td><td>$\L[x(t-T)]=e^{-Ts}X(s)$</td><td><span class="zh">卷积</span><span class="en">Convolution</span></td><td>$\L[x*y]=X(s)Y(s)$</td></tr>
+<tr><td><span class="zh">尺度</span><span class="en">Scaling</span></td><td>$\L[x(\alpha t)]=\frac1\alpha X\!\left(\frac s\alpha\right)$</td><td><span class="zh">终值</span><span class="en">Final value</span></td><td>$y(\infty)=\lim_{s\to0}sY(s)$ <span class="zh">（$sY$ 极点全在 OLHP）</span><span class="en">(poles of $sY$ in OLHP)</span></td></tr>
+</table></div>
+
+<h3 id="f-tf" data-kw="transfer function closed loop gang of four controller form 闭环 传递函数 实现"><span class="zh">传递函数、闭环、实现</span><span class="en">Transfer functions, closed loop, realization</span></h3>
+<div class="key"><span class="lbl"><span class="zh">公式</span><span class="en">Formula</span></span>
+$$G(s)=\frac{Y(s)}{U(s)}=c(sI-A)^{-1}b+d,\qquad u=r-Ky:\ \ \dot x=(A-Kbc)x+br,\ \ y=cx$$
+$$\begin{bmatrix}U_1\\U_2\\Y_1\\Y_2\end{bmatrix}=\frac{1}{1+PC}\begin{bmatrix}1&-C\\P&1\\PC&C\\P&-PC\end{bmatrix}\begin{bmatrix}W_1\\W_2\end{bmatrix},\qquad
+\text{GoF}=\frac{1}{ap+bq}\begin{bmatrix}ap&aq\\bp&bq\end{bmatrix}$$
+$$\text{controller form: }\dot x=\begin{bmatrix}-\frac{a_1}{a_0}&\cdots&-\frac{a_{n-1}}{a_0}&-\frac{a_n}{a_0}\\1&\cdots&0&0\\ \vdots&\ddots&\vdots&\vdots\\0&\cdots&1&0\end{bmatrix}x+\begin{bmatrix}\frac1{a_0}\\0\\ \vdots\\0\end{bmatrix}u,\quad y=\Big[b_1-b_0\tfrac{a_1}{a_0}\ \cdots\ b_n-b_0\tfrac{a_n}{a_0}\Big]x+\tfrac{b_0}{a_0}u$$
+</div>
+
+<h3 id="f-stab" data-kw="stability routh kharitonov pole placement well posed 稳定 判据"><span class="zh">稳定性与设计</span><span class="en">Stability and design</span></h3>
+<div class="key"><span class="lbl"><span class="zh">公式</span><span class="en">Formula</span></span>
+<ul>
+<li><span class="zh"><b>BIBO</b>：$\int_0^\infty|g|<\infty$ ⟺ $G$ proper 且所有极点 $\operatorname{Re}<0$。</span><span class="en"><b>BIBO</b>: $\int_0^\infty|g|<\infty$ ⟺ $G$ proper and all poles have $\operatorname{Re}<0$.</span></li>
+<li><span class="zh"><b>必要条件</b>：$a_0>0$ 时，稳定 ⟹ 所有 $a_i>0$（反过来不成立）。</span><span class="en"><b>Necessary condition</b>: with $a_0>0$, stable ⟹ all $a_i>0$ (not conversely).</span></li>
+<li><span class="zh"><b>Routh</b>：前两行 $[a_0,a_2,a_4,\dots]$、$[a_1,a_3,\dots]$；</span><span class="en"><b>Routh</b>: first rows $[a_0,a_2,a_4,\dots]$, $[a_1,a_3,\dots]$;</span> $r_{ij}=\dfrac{r_{(i-1)0}\,r_{(i-2)(j+1)}-r_{(i-2)0}\,r_{(i-1)(j+1)}}{r_{(i-1)0}}$<span class="zh">，缺项按 0。</span><span class="en">, missing entries = 0.</span></li>
+<li><span class="zh"><b>Kharitonov</b>（从 $a_0$ 开始）：</span><span class="en"><b>Kharitonov</b> (from $a_0$): </span>$k_1$: L L U U, $k_2$: L U U L, $k_3$: U L L U, $k_4$: U U L L.</li>
+<li><span class="zh"><b>适定</b>：$1+P(\infty)C(\infty)\neq0$；<b>特征多项式</b> $c(s)=a(s)p(s)+b(s)q(s)$。</span><span class="en"><b>Well-posed</b>: $1+P(\infty)C(\infty)\neq0$; <b>characteristic polynomial</b> $c(s)=a(s)p(s)+b(s)q(s)$.</span></li>
+<li><span class="zh"><b>极点配置</b>：proper 控制器有 $2m+2$ 个未知数、$n+m+1$ 个方程 ⟹ $m=n-1$ 唯一解；strictly proper（$q_0=0$）⟹ $m=n$ 唯一解。</span><span class="en"><b>Pole placement</b>: a proper controller has $2m+2$ unknowns and $n+m+1$ equations ⟹ unique solution at $m=n-1$; strictly proper ($q_0=0$) ⟹ unique at $m=n$.</span></li>
+</ul>
+</div>
+
+<h2 id="traps" data-kw="traps pitfalls mistakes 易错 陷阱 注意"><span class="zh">易错点 Top 15</span><span class="en">Top 15 traps</span></h2>
+<ol>
+<li class="trap"><span class="zh"><b>方框图求和点没标 “−” 就是 “+”。</b>课件“复杂反馈系统”的 Loop 1（$G_1\to H_1\to G_1$）是<b>正反馈</b>，化成 $\frac{G_1}{1-G_1H_1}$；Loop 2 标了 “−”，化成 $\frac{G_3}{1+G_3H_2}$。</span><span class="en"><b>An unmarked summing input is “+”.</b> In the slide's “complicated feedback system”, Loop 1 ($G_1\to H_1\to G_1$) is <b>positive feedback</b>: $\frac{G_1}{1-G_1H_1}$; Loop 2 has a “−”: $\frac{G_3}{1+G_3H_2}$.</span></li>
+<li class="trap"><span class="zh"><b>Routh 表出现 0 就判“不稳定”</b>（课程不用 ε 法、也不用辅助多项式）。例：$s^4+3s^3+3s^2+3s+2=(s^2+1)(s+1)(s+2)$，$r_{30}=0$，有虚轴根。HW2 3.4(b) 同理。</span><span class="en"><b>A zero in the Routh table means “not stable”</b> (no ε-trick or auxiliary polynomial in this course). E.g. $s^4+3s^3+3s^2+3s+2=(s^2+1)(s+1)(s+2)$ gives $r_{30}=0$: imaginary-axis roots. Same for HW2 3.4(b).</span></li>
+<li class="trap"><span class="zh"><b>系数全正只是必要条件。</b>$s^3+s^2+4s+30=(s+3)(s^2-2s+10)$ 不稳定。反过来（$a_0>0$ 时）缺项或有非正系数一定不稳定。</span><span class="en"><b>All-positive coefficients are only necessary.</b> $s^3+s^2+4s+30=(s+3)(s^2-2s+10)$ is unstable. Conversely (with $a_0>0$) a missing or non-positive coefficient guarantees instability.</span></li>
+<li class="trap"><span class="zh"><b>虚轴上的极点不算稳定。</b>积分器 $\frac1s$ 输入阶跃，输出斜坡 $t\sigma(t)$ 无界。</span><span class="en"><b>Poles on the imaginary axis are not stable.</b> The integrator $\frac1s$ maps a step to the unbounded ramp $t\sigma(t)$.</span></li>
+<li class="trap"><span class="zh"><b>non-proper 一定不稳定。</b>BIBO 定理要求 $G$ proper（L11 的 “Nonproper!!” 例：闭环出现 $-s-2$）。</span><span class="en"><b>Non-proper means unstable.</b> The BIBO theorem requires $G$ proper (L11 “Nonproper!!” example: closed loop $-s-2$).</span></li>
+<li class="trap"><span class="zh"><b>终值定理有前提</b>：$sY(s)$ 的极点全在开左半平面。$\frac1{s-1}$、$\frac{1}{s^2+\omega^2}$ 都不能用。</span><span class="en"><b>FVT has a precondition</b>: all poles of $sY(s)$ in the OLHP. It fails for $\frac1{s-1}$ and $\frac{1}{s^2+\omega^2}$.</span></li>
+<li class="trap"><span class="zh"><b>内稳定不能只看 $\frac{PC}{1+PC}$。</b>$P=\frac1{s-1},\ C=\frac{s-1}{s+1}$：四个里三个稳定，但 $\frac{P}{1+PC}=\frac{s+1}{(s-1)(s+2)}$ 不稳定（不稳定零极点对消）。</span><span class="en"><b>Don't check only $\frac{PC}{1+PC}$.</b> $P=\frac1{s-1},\ C=\frac{s-1}{s+1}$: three of four are stable but $\frac{P}{1+PC}=\frac{s+1}{(s-1)(s+2)}$ is not (unstable pole/zero cancellation).</span></li>
+<li class="trap"><span class="zh"><b>$ap+bq$ 降阶 = 不适定。</b>$P=\frac{s+2}{s+1},\ C=-1$：$ap+bq=-1$，但 $1+P(\infty)C(\infty)=0$，闭环 non-proper，不稳定。</span><span class="en"><b>Degree drop in $ap+bq$ = ill-posed.</b> $P=\frac{s+2}{s+1},\ C=-1$: $ap+bq=-1$ but $1+P(\infty)C(\infty)=0$, closed loop non-proper, unstable.</span></li>
+<li class="trap"><span class="zh"><b>期望特征多项式必须是 $n+m$ 阶</b>，极点个数要配齐。strictly proper 多了约束 $q_0=0$，最低要 $m=n$。</span><span class="en"><b>The desired polynomial must have degree $n+m$</b> (count the poles). Strictly proper adds $q_0=0$, so the minimum is $m=n$.</span></li>
+<li class="trap"><span class="zh"><b>控制器本身可以不稳定。</b>$C=\frac{33s-6}{s-25}$ 不稳定，但闭环极点 $-1,-2,-3$ 稳定。问 “Stable controller?” 时单独看 $p(s)$ 的根。</span><span class="en"><b>The controller itself may be unstable.</b> $C=\frac{33s-6}{s-25}$ is unstable while the closed loop ($-1,-2,-3$) is stable. For “Stable controller?” check the roots of $p(s)$.</span></li>
+<li class="trap"><span class="zh"><b>线性化顺序</b>：先解工作点（包括 $u_0$），再求偏导，最后代入；结果写成 $\tilde x,\tilde u,\tilde y$。MagLev 的 $u_0=Ry_0\sqrt{2Mg/(rL_1)}$ 别漏。</span><span class="en"><b>Linearization order</b>: solve the operating point (including $u_0$), differentiate, then substitute; write the result in $\tilde x,\tilde u,\tilde y$. Don't forget $u_0=Ry_0\sqrt{2Mg/(rL_1)}$ for MagLev.</span></li>
+<li class="trap"><span class="zh"><b>$\L[\dot x]=sX$ 用的是 $0^-$ 下限。</b>$(\cos\omega t)\sigma(t)$ 求导会出现 $\delta(t)$。</span><span class="en"><b>$\L[\dot x]=sX$ uses the $0^-$ lower limit.</b> Differentiating $(\cos\omega t)\sigma(t)$ produces a $\delta(t)$.</span></li>
+<li class="trap"><span class="zh"><b>课程的分类口径</b>：比例是 static，积分是 dynamic；PI 是 causal，<b>微分器 $K_D\dot u$ 是 noncausal</b>（L2 原话）。</span><span class="en"><b>Course conventions</b>: proportional = static, integral = dynamic; PI is causal, <b>the differentiator $K_D\dot u$ is noncausal</b> (as stated in L2).</span></li>
+<li class="trap"><span class="zh"><b>Kharitonov 模式从最高次 $a_0$ 开始数</b>；先把闭环特征多项式写出来，再看每个系数的区间。</span><span class="en"><b>Kharitonov patterns start at the leading coefficient $a_0$</b>; write the closed-loop characteristic polynomial first, then read each coefficient's interval.</span></li>
+<li class="trap"><span class="zh"><b>实现不唯一。</b>$(TAT^{-1},Tb,cT^{-1},d)$ 给出同一个传递函数，所以 <code>ss(tf(sys))</code> 和原矩阵、和手写的控制器型都可以不同（HW1 2.16(e)）。</span><span class="en"><b>Realizations are not unique.</b> $(TAT^{-1},Tb,cT^{-1},d)$ has the same transfer function, so <code>ss(tf(sys))</code>, the original matrices and your controller form can all differ (HW1 2.16(e)).</span></li>
+</ol>
+
+<div class="foot"><span class="zh">依据：ECE3250（2026 Fall, Xiaomeng Chen）L1–L13 讲义、Course_Overview-midterm、Homework 1/2。记号与 Qiu &amp; Zhou 教材一致：多项式写成降幂 $a_0s^n+a_1s^{n-1}+\dots+a_n$。</span><span class="en">Sources: ECE3250 (Fall 2026, Xiaomeng Chen) slides L1–L13, Course_Overview-midterm, Homework 1/2. Notation follows Qiu &amp; Zhou: polynomials in descending powers $a_0s^n+a_1s^{n-1}+\dots+a_n$.</span></div>
+</main>
+</body>
+</html>

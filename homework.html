@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作业 Homework · ECE3250 期中速成</title>
+<script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
+<link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=1">
+<script defer src="assets/vendor/katex/katex.min.js"></script>
+<script defer src="assets/vendor/katex/auto-render.min.js"></script>
+<script defer src="assets/search-index.js?v=1"></script>
+<script defer src="assets/cmath.js?v=1"></script>
+<script defer src="assets/ui.js?v=1"></script>
+</head>
+<body>
+<header id="topnav"></header>
+<div class="wrap with-toc">
+<aside class="toc" data-auto></aside>
+<main>
+<h1><span class="zh">作业完整解答</span><span class="en">Homework solutions</span>
+<small><span class="zh">HW1 = 教材第 2 章（建模、线性化、方框图、MATLAB）；HW2 = 第 3 章（Routh、内稳定、Kharitonov、两参数区域）。先自己做，再展开对照。</span><span class="en">HW1 = Chapter 2 (modeling, linearization, block diagrams, MATLAB); HW2 = Chapter 3 (Routh, internal stability, Kharitonov, 2-parameter regions). Try first, then expand the solutions.</span></small></h1>
+<div class="toolbar"><button data-expand="open"><span class="zh">展开全部解答</span><span class="en">Expand all</span></button><button data-expand="close"><span class="zh">折叠全部</span><span class="en">Collapse all</span></button></div>
+
+<!-- ================= HW1 ================= -->
+<h2 id="hw1" data-zh="HW1（第 2 章）" data-en="HW1 (Ch. 2)" data-kw="homework 1 chapter 2"><span class="zh">HW1 · 第 2 章</span><span class="en">HW1 · Chapter 2</span></h2>
+
+<h3 id="hw1-24" data-toc data-zh="2.4 单摆线性化" data-en="2.4 Pendulum linearization" data-kw="pendulum linearization state space transfer function rod point mass torque">2.4 <span class="zh">带端点质量的摆：状态空间、线性化、传递函数</span><span class="en">Pendulum with a tip mass: state space, linearization, transfer function</span></h3>
+<div class="card">
+<p class="zh">均匀杆（长 $L$、质量 $m$）下端挂点质量 $M$，上端铰接；输入力矩 $\tau(t)$，输出角度 $\theta$（从竖直向下量起），无摩擦。运动方程：</p>
+<p class="en">A uniform rod (length $L$, mass $m$) with a point mass $M$ at its lower end, pivoted at the top; input torque $\tau(t)$, output angle $\theta$ measured from the downward vertical, no friction:</p>
+$$(M+\tfrac m3)L^2\,\ddot\theta=\tau-(M+\tfrac m2)Lg\sin\theta$$
+<p class="zh">(a) 取 $x_1=\theta,\ x_2=\dot\theta,\ u=\tau$，写状态空间模型，$y=\theta$。(b) 是否线性？在 $\theta=\dot\theta=\tau=0$ 处线性化。(c) 求线性化系统的 $G(s)=\Theta(s)/T(s)$。</p>
+<p class="en">(a) With $x_1=\theta,\ x_2=\dot\theta,\ u=\tau$, write a state-space model with $y=\theta$. (b) Is it linear? Linearize about $\theta=\dot\theta=\tau=0$. (c) Find $G(s)=\Theta(s)/T(s)$ of the linearized system.</p>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<p><b>(a)</b></p>
+$$\dot x_1=x_2,\qquad \dot x_2=\frac{u-(M+\frac m2)Lg\sin x_1}{(M+\frac m3)L^2},\qquad y=x_1$$
+<p><b>(b)</b> <span class="zh">因为有 $\sin x_1$，所以<b>不是线性系统</b>。检查工作点：$f(0,0)=\big[0,\ 0\big]^T$，$(x_0,u_0)=(0,0)$ 是平衡点。求 Jacobian：</span><span class="en">Because of $\sin x_1$ the system is <b>nonlinear</b>. Check the operating point: $f(0,0)=[0,\ 0]^T$, so $(x_0,u_0)=(0,0)$ is an equilibrium. Jacobians:</span></p>
+$$\frac{\partial f_2}{\partial x_1}=-\frac{(M+\frac m2)g\cos x_1}{(M+\frac m3)L}\Big|_0=-\frac{(M+\frac m2)g}{(M+\frac m3)L},\qquad \frac{\partial f_2}{\partial x_2}=0,\qquad \frac{\partial f_2}{\partial u}=\frac{1}{(M+\frac m3)L^2}$$
+$$\dot{\tilde x}=\underbrace{\begin{bmatrix}0&1\\-\omega_0^2&0\end{bmatrix}}_{A}\tilde x+\underbrace{\begin{bmatrix}0\\ \frac{1}{(M+\frac m3)L^2}\end{bmatrix}}_{b}\tilde u,\qquad \tilde y=\underbrace{[1\ \ 0]}_{c}\tilde x,\ d=0,\qquad \omega_0^2=\frac{(M+\frac m2)g}{(M+\frac m3)L}=\frac{3(2M+m)g}{2(3M+m)L}$$
+<p><b>(c)</b></p>
+$$G(s)=c(sI-A)^{-1}b=\frac{1/[(M+\frac m3)L^2]}{s^2+\omega_0^2}=\frac{1}{(M+\frac m3)L^2s^2+(M+\frac m2)gL}$$
+<p class="zh small muted">自检：$m=0$ 时退化成点质量摆 $\frac{1}{ML^2s^2+MgL}$；极点 $\pm j\omega_0$ 在虚轴上（无摩擦，临界，不是 BIBO 稳定）。</p>
+<p class="en small muted">Sanity check: $m=0$ gives the point-mass pendulum $\frac{1}{ML^2s^2+MgL}$; poles $\pm j\omega_0$ lie on the imaginary axis (frictionless, not BIBO stable).</p>
+</div></details>
+
+<h3 id="hw1-29" data-toc data-zh="2.9 输出反馈闭环" data-en="2.9 Output feedback" data-kw="output feedback closed loop state space proportional gain">2.9 <span class="zh">比例输出反馈后的闭环状态空间</span><span class="en">Closed-loop state space under proportional output feedback</span></h3>
+<div class="card">
+<p class="zh">对象 $\dot x=Ax+bu,\ y=cx$，接负比例输出反馈 $u(t)=r(t)-Ky(t)$。求以 $r$ 为输入、$y$ 为输出的闭环状态空间模型。</p>
+<p class="en">The plant $\dot x=Ax+bu,\ y=cx$ is connected in negative proportional output feedback $u(t)=r(t)-Ky(t)$. Obtain the closed-loop state-space model from $r$ to $y$.</p>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<p class="zh">把 $u=r-Kcx$ 代入状态方程：</p><p class="en">Substitute $u=r-Kcx$ into the state equation:</p>
+$$\dot x=Ax+b(r-Kcx)=(A-Kbc)\,x+b\,r,\qquad y=cx$$
+<p class="zh">即闭环矩阵 $(A_{cl},b_{cl},c_{cl},d_{cl})=(A-Kbc,\ b,\ c,\ 0)$。传递函数验证：$c(sI-A+Kbc)^{-1}b=\dfrac{G}{1+KG}$，其中 $G=c(sI-A)^{-1}b$，和方框图公式一致。</p>
+<p class="en">So $(A_{cl},b_{cl},c_{cl},d_{cl})=(A-Kbc,\ b,\ c,\ 0)$. Check with transfer functions: $c(sI-A+Kbc)^{-1}b=\dfrac{G}{1+KG}$ with $G=c(sI-A)^{-1}b$, matching the block-diagram formula.</p>
+<div class="tip"><span class="lbl"><span class="zh">变形</span><span class="en">Variant</span></span><span class="zh">若 $y=cx+du$ 且 $d\ne0$：$u=\frac{r-Kcx}{1+Kd}$ ⟹ $A_{cl}=A-\frac{K}{1+Kd}bc$，$b_{cl}=\frac{b}{1+Kd}$，$c_{cl}=\frac{c}{1+Kd}$，$d_{cl}=\frac{d}{1+Kd}$（需要 $1+Kd\ne0$，即适定）。</span><span class="en">If $y=cx+du$ with $d\ne0$: $u=\frac{r-Kcx}{1+Kd}$ ⟹ $A_{cl}=A-\frac{K}{1+Kd}bc$, $b_{cl}=\frac{b}{1+Kd}$, $c_{cl}=\frac{c}{1+Kd}$, $d_{cl}=\frac{d}{1+Kd}$ (requires $1+Kd\ne0$, i.e. well-posedness).</span></div>
+</div></details>
+
+<h3 id="hw1-210" data-toc data-zh="2.10 方框图化简" data-en="2.10 Block diagram" data-kw="block diagram reduction closed loop transfer function algebraic elimination">2.10 <span class="zh">方框图化简</span><span class="en">Block-diagram reduction</span></h3>
+<div class="card">
+<figure>
+<svg class="bd" viewBox="0 0 470 175" width="470">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#222"/></marker></defs>
+<text x="8" y="94">r</text><path class="w" d="M18,100 H51"/>
+<circle class="sum" cx="60" cy="100" r="9"/>
+<path class="w" d="M69,100 H95"/><rect class="blk" x="95" y="82" width="56" height="36"/><text x="110" y="105">A(s)</text>
+<path class="w" d="M151,100 H232"/><circle class="dot" cx="185" cy="100" r="2.5"/><text x="160" y="93">v</text>
+<rect class="blk" x="232" y="82" width="56" height="36"/><text x="247" y="105">B(s)</text>
+<path class="w" d="M288,100 H318"/><rect class="blk" x="318" y="82" width="56" height="36"/><text x="333" y="105">C(s)</text>
+<path class="w" d="M374,100 H406"/><circle class="sum" cx="415" cy="100" r="9"/><path class="w" d="M424,100 H462"/><text x="450" y="93">y</text>
+<path class="w" d="M185,100 V35 H272"/><rect class="blk" x="272" y="18" width="56" height="34"/><text x="287" y="40">D(s)</text>
+<path class="w" d="M328,35 H415 V91"/>
+<path class="w" d="M185,100 V155 H151"/><rect class="blk" x="95" y="138" width="56" height="34"/><text x="100" y="160">E(s)B(s)</text>
+<path class="w" d="M95,155 H60 V109"/><text class="up" x="66" y="124">−</text>
+</svg>
+<figcaption><span class="zh">求 $G(s)=Y(s)/R(s)$。输出处的求和点把两路相加。</span><span class="en">Find $G(s)=Y(s)/R(s)$. The output summing junction adds its two inputs.</span></figcaption>
+</figure>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<p class="zh"><b>代数消元</b>：设 $A$ 的输出（引出点）为 $v$。</p><p class="en"><b>Algebraic elimination</b>: let $v$ be the output of $A$ (the pickoff point).</p>
+$$v=A\,(r-EBv)\ \Rightarrow\ v=\frac{A}{1+ABE}\,r,\qquad y=BCv+Dv=(BC+D)\,v$$
+$$\boxed{G(s)=\frac{Y}{R}=\frac{A(s)\big[B(s)C(s)+D(s)\big]}{1+A(s)B(s)E(s)}}$$
+<p class="zh"><b>方框图化简</b>：(1) 内环：前向 $A$，反馈 $EB$，负反馈 ⟹ $\frac{A}{1+AEB}$；(2) 引出点之后的两条支路 $BC$ 和 $D$ 并联 ⟹ $BC+D$；(3) 两者串联。</p>
+<p class="en"><b>Diagram reduction</b>: (1) inner loop, forward $A$, feedback $EB$, negative ⟹ $\frac{A}{1+AEB}$; (2) after the pickoff, branches $BC$ and $D$ are in parallel ⟹ $BC+D$; (3) cascade the two.</p>
+<div class="trap"><span class="lbl"><span class="zh">注意</span><span class="en">Watch out</span></span><span class="zh">反馈通路是 $E(s)B(s)$，不是 $E(s)$；引出点在 $A$ 后、$B$ 前，所以 $D$ 支路不经过 $B$。</span><span class="en">The feedback path is $E(s)B(s)$, not $E(s)$; the pickoff is after $A$ and before $B$, so the $D$ branch bypasses $B$.</span></div>
+</div></details>
+
+<h3 id="hw1-216" data-toc data-zh="2.16 MATLAB：ss→tf" data-en="2.16 MATLAB ss→tf" data-kw="matlab ss tf zpk pole zero dcgain controllable canonical form realization similarity transformation">2.16 <span class="zh">MATLAB：状态空间 → 传递函数 → 实现</span><span class="en">MATLAB: state space → transfer function → realization</span></h3>
+<div class="card">
+$$A=\begin{bmatrix}-1.7860&15.9674&-1.6930&13.1487\\-1.1773&-15.2644&-1.3548&-14.5145\\3.3427&-6.8798&3.4513&-3.5889\\1.5017&16.7058&1.1717&13.4250\end{bmatrix},\ B=\begin{bmatrix}-0.9618\\1.3011\\0.1081\\-1.1984\end{bmatrix},\ C=\begin{bmatrix}29.8608&35.9450&29.4689&17.7162\end{bmatrix},\ D=0$$
+<p class="zh">(a) 用 <code>ss</code> 建系统；(b) <code>tf</code> 求传递函数；(c) 极点、传输零点、DC gain；(d) 从传递函数手写一个可控标准型；(e) 用 MATLAB 转回状态空间，比较三个模型，解释为什么等价的状态空间矩阵不必相同。</p>
+<p class="en">(a) Build the system with <code>ss</code>; (b) get the transfer function with <code>tf</code>; (c) poles, transmission zeros, DC gain; (d) write a controllable canonical realization from the TF; (e) convert back with MATLAB, compare the three models and explain why equivalent state-space matrices need not be identical.</p>
+</div>
+<details class="sol"><summary><span class="zh">解答（数值用精确有理运算核对过）</span><span class="en">Solution (numbers verified with exact rational arithmetic)</span></summary><div class="body">
+<pre><code>A=[-1.7860 15.9674 -1.6930 13.1487; -1.1773 -15.2644 -1.3548 -14.5145;
+    3.3427 -6.8798 3.4513 -3.5889;  1.5017 16.7058 1.1717 13.4250];
+B=[-0.9618; 1.3011; 0.1081; -1.1984];  C=[29.8608 35.9450 29.4689 17.7162];  D=0;
+sys=ss(A,B,C,D);  G=tf(sys)
+pole(sys), zero(sys), dcgain(sys), zpk(sys)
+sys2=ss(G)</code></pre>
+<p><b>(b)</b></p>
+$$G(s)=\frac{0.002416s^3-1.634s^2+0.2485s+43.98}{s^4+0.1741s^3+27.92s^2+0.02582s+0.002138}$$
+<p><b>(c)</b> <span class="zh">极点</span><span class="en">Poles</span>：$-0.08659\pm5.2833j,\ \ -0.000462\pm0.008739j$；<span class="zh">零点</span><span class="en">zeros</span>：$676.1,\ 5.2856,\ -5.0936$；DC gain $=\dfrac{43.978}{0.0021384}\approx2.0566\times10^{4}$.</p>
+<p class="zh small muted">分子 $s^3$ 系数只有 0.0024，所以出现一个很远的零点 676，这很可能是题目矩阵只保留 4 位小数造成的；考试只需照 MATLAB 结果写。四个极点都在左半平面（但很靠近虚轴），所以 DC gain 有意义。</p>
+<p class="en small muted">The $s^3$ numerator coefficient is only 0.0024, which creates the far-away zero at 676 — probably an artifact of the 4-decimal matrix entries; just report MATLAB's numbers. All poles are in the LHP (barely), so the DC gain is meaningful.</p>
+<p><b>(d)</b> <span class="zh">按课件的控制器型（$a_0=1$，$b_0=0$）：</span><span class="en">Controller (controllable canonical) form from the slides ($a_0=1$, $b_0=0$):</span></p>
+$$A_c=\begin{bmatrix}-0.1741&-27.92&-0.02582&-0.002138\\1&0&0&0\\0&1&0&0\\0&0&1&0\end{bmatrix},\ b_c=\begin{bmatrix}1\\0\\0\\0\end{bmatrix},\ c_c=\begin{bmatrix}0.002416&-1.634&0.2485&43.98\end{bmatrix},\ d_c=0$$
+<p><b>(e)</b> <span class="zh"><code>ss(G)</code> 也给出一种伴随型实现，但 MATLAB 会做数值缩放，所以元素和 (d) 不一样，和原来的 $A,B,C$ 更不一样。原因：对任意可逆矩阵 $T$，令 $\hat x=Tx$，则 $(TAT^{-1},\,TB,\,CT^{-1},\,D)$ 的传递函数是</span><span class="en"><code>ss(G)</code> also returns a companion-type realization, but MATLAB scales it numerically, so its entries differ from (d) and even more from the original $A,B,C$. Reason: for any invertible $T$ with $\hat x=Tx$, the model $(TAT^{-1},\,TB,\,CT^{-1},\,D)$ has transfer function</span></p>
+$$CT^{-1}(sI-TAT^{-1})^{-1}TB+D=C(sI-A)^{-1}B+D$$
+<p class="zh">传递函数只描述输入输出关系；状态坐标的选择不唯一，所以等价的状态空间矩阵不必相同（相似变换），极点（$A$ 的特征值）和传递函数不变。</p>
+<p class="en">The transfer function only captures the input–output map; the choice of state coordinates is not unique, so equivalent realizations differ by a similarity transform while poles (eigenvalues of $A$) and the TF stay the same.</p>
+<a class="btn calc" href="calc.html?preset=hw216#ss"><span class="zh">计算器复算</span><span class="en">Recompute</span></a>
+</div></details>
+
+<!-- ================= HW2 ================= -->
+<h2 id="hw2" data-zh="HW2（第 3 章）" data-en="HW2 (Ch. 3)" data-kw="homework 2 chapter 3 stability"><span class="zh">HW2 · 第 3 章</span><span class="en">HW2 · Chapter 3</span></h2>
+
+<h3 id="hw2-34" data-toc data-zh="3.4 多项式稳定性" data-en="3.4 Polynomial stability" data-kw="routh polynomial stability parameter K range">3.4 <span class="zh">多项式稳定性（含参数 $K$）</span><span class="en">Polynomial stability (with parameter $K$)</span></h3>
+<div class="card">
+<p>(a) $p_1(s)=s^4+2s^3+9s^2+2s+5$　(b) $p_2(s)=s^5+5s^4+12s^3+24s^2+32s+16$　(c) $p_3(s)=s^3+(2K+1)s^2+3Ks+5$</p>
+<p class="zh">判断稳定性；(c) 求使其稳定的实参数 $K$ 的范围。</p><p class="en">Check stability; for (c) find the range of real $K$ for which it is stable.</p>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<p><b>(a)</b></p>
+<div class="tbl-wrap"><table class="routh"><tr><td class="row-h">$s^4$</td><td>1</td><td>9</td><td>5</td></tr><tr><td class="row-h">$s^3$</td><td>2</td><td>2</td><td></td></tr><tr><td class="row-h">$s^2$</td><td>$\frac{2\cdot9-1\cdot2}{2}=8$</td><td>$\frac{2\cdot5-0}{2}=5$</td><td></td></tr><tr><td class="row-h">$s^1$</td><td>$\frac{8\cdot2-2\cdot5}{8}=\frac34$</td><td></td><td></td></tr><tr><td class="row-h">$s^0$</td><td>5</td><td></td><td></td></tr></table></div>
+<p class="zh">第一列 $1,2,8,\frac34,5$ 全正 ⟹ <b>稳定</b>。</p><p class="en">First column $1,2,8,\frac34,5$ all positive ⟹ <b>stable</b>.</p>
+<p><b>(b)</b></p>
+<div class="tbl-wrap"><table class="routh"><tr><td class="row-h">$s^5$</td><td>1</td><td>12</td><td>32</td></tr><tr><td class="row-h">$s^4$</td><td>5</td><td>24</td><td>16</td></tr><tr><td class="row-h">$s^3$</td><td>$\frac{60-24}{5}=\frac{36}{5}$</td><td>$\frac{160-16}{5}=\frac{144}{5}$</td><td></td></tr><tr><td class="row-h">$s^2$</td><td>$\frac{\frac{36}5\cdot24-5\cdot\frac{144}5}{\frac{36}5}=4$</td><td>$16$</td><td></td></tr><tr><td class="row-h">$s^1$</td><td class="badcell">$\frac{4\cdot\frac{144}5-\frac{36}5\cdot16}{4}=0$</td><td></td><td></td></tr></table></div>
+<p class="zh">出现 0，$s^0$ 行无法计算 ⟹ <b>不稳定</b>。实际上 $p_2=(s^2+4)(s+1)(s+2)^2$，有虚轴根 $\pm2j$。</p>
+<p class="en">A zero appears and the $s^0$ row cannot be computed ⟹ <b>not stable</b>. Indeed $p_2=(s^2+4)(s+1)(s+2)^2$ has roots $\pm2j$ on the imaginary axis.</p>
+<p><b>(c)</b></p>
+<div class="tbl-wrap"><table class="routh"><tr><td class="row-h">$s^3$</td><td>1</td><td>$3K$</td></tr><tr><td class="row-h">$s^2$</td><td>$2K+1$</td><td>5</td></tr><tr><td class="row-h">$s^1$</td><td>$\dfrac{3K(2K+1)-5}{2K+1}=\dfrac{6K^2+3K-5}{2K+1}$</td><td></td></tr><tr><td class="row-h">$s^0$</td><td>5</td><td></td></tr></table></div>
+<p class="zh">需要 $2K+1>0$ 且 $6K^2+3K-5>0$。后者的根 $K=\frac{-3\pm\sqrt{129}}{12}$，即 $K<-1.1965$ 或 $K>0.6965$。与 $K>-\frac12$ 取交集：</p>
+<p class="en">Need $2K+1>0$ and $6K^2+3K-5>0$. The roots of the latter are $K=\frac{-3\pm\sqrt{129}}{12}$, i.e. $K<-1.1965$ or $K>0.6965$. Intersect with $K>-\frac12$:</p>
+$$\boxed{K>\frac{-3+\sqrt{129}}{12}\approx0.6965}$$
+<a class="btn calc" href="calc.html?routh=s%5E3%2B(2K%2B1)s%5E2%2B3Ks%2B5&param=K#routh"><span class="zh">计算器：含参 Routh</span><span class="en">Calculator: parametric Routh</span></a>
+</div></details>
+
+<h3 id="hw2-319" data-toc data-zh="3.19 比例控制的 K 范围" data-en="3.19 Range of K" data-kw="internal stability proportional controller gain range routh feedback">3.19 <span class="zh">内稳定的 $K$ 范围</span><span class="en">Range of $K$ for internal stability</span></h3>
+<div class="card">
+$$P(s)=\frac{s^2+15}{s^3+s^2+10s+5},\qquad C(s)=K$$
+<p class="zh">标准负反馈，求使系统内稳定的 $K$ 的范围。</p><p class="en">Standard negative feedback; find the range of $K$ for internal stability.</p>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<ol class="steps">
+<li><span class="zh"><b>前提</b>：$P$ strictly proper，$C$ proper ⟹ $1+P(\infty)C(\infty)=1\ne0$，适定。$b=s^2+15$ 的根 $\pm j\sqrt{15}$ 代入 $a(s)$ 得 $-10-5\sqrt{15}j\ne0$ ⟹ $a,b$ 互质。</span><span class="en"><b>Preconditions</b>: $P$ strictly proper, $C$ proper ⟹ $1+P(\infty)C(\infty)=1\ne0$, well-posed. Plugging the roots $\pm j\sqrt{15}$ of $b$ into $a$ gives $-10-5\sqrt{15}j\ne0$ ⟹ $a,b$ coprime.</span></li>
+<li><span class="zh"><b>特征多项式</b>（$p=1,\ q=K$）：</span><span class="en"><b>Characteristic polynomial</b> ($p=1,\ q=K$):</span> $c(s)=s^3+s^2+10s+5+K(s^2+15)=s^3+(1+K)s^2+10s+(5+15K)$</li>
+<li><b>Routh</b>：$s^3$: $1,\ 10$；$s^2$: $1+K,\ 5+15K$；$s^1$: $\dfrac{10(1+K)-(5+15K)}{1+K}=\dfrac{5(1-K)}{1+K}$；$s^0$: $5+15K$。</li>
+<li><span class="zh"><b>条件</b>：$1+K>0$，$1-K>0$，$5+15K>0$ ⟹</span><span class="en"><b>Conditions</b>: $1+K>0$, $1-K>0$, $5+15K>0$ ⟹</span> $$\boxed{-\tfrac13<K<1}$$</li>
+</ol>
+<a class="btn calc" href="calc.html?routh=s%5E3%2Bs%5E2%2B10s%2B5%2BK(s%5E2%2B15)&param=K#routh"><span class="zh">计算器验证</span><span class="en">Verify</span></a>
+</div></details>
+
+<h3 id="hw2-317" data-toc data-zh="3.17 Kharitonov 鲁棒稳定" data-en="3.17 Kharitonov" data-kw="kharitonov robust stability interval polynomial uncertain plant double integrator">3.17 <span class="zh">不确定对象 + 双积分控制器：Kharitonov</span><span class="en">Uncertain plant + double integrator: Kharitonov</span></h3>
+<div class="card">
+$$P(s)=\frac{b_1s+b_2}{a_0s^2+a_1s+a_2},\quad b_1\in[2,3],\ b_2\in[1,2],\ a_0=1,\ a_1\in[2,3],\ a_2\in[4,6],\qquad C(s)=\frac1{s^2}$$
+<p class="zh">标准负反馈。是否对所有参数都稳定？</p><p class="en">Standard negative feedback. Is the system stable for all plant parameters?</p>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<p class="zh"><b>闭环特征多项式</b>（$p=s^2$，$q=1$）：</p><p class="en"><b>Closed-loop characteristic polynomial</b> ($p=s^2$, $q=1$):</p>
+$$c(s)=s^2(s^2+a_1s+a_2)+b_1s+b_2=s^4+a_1s^3+a_2s^2+b_1s+b_2$$
+<p class="zh">各系数独立变化，是区间多项式：$[1,1],[2,3],[4,6],[2,3],[1,2]$。Kharitonov 四个多项式（从 $s^4$ 开始，LLUU / LUUL / ULLU / UULL）：</p>
+<p class="en">The coefficients vary independently, so this is an interval polynomial: $[1,1],[2,3],[4,6],[2,3],[1,2]$. The four Kharitonov polynomials (from $s^4$, LLUU / LUUL / ULLU / UULL):</p>
+<div class="tbl-wrap"><table>
+<tr><th></th><th><span class="zh">多项式</span><span class="en">Polynomial</span></th><th><span class="zh">Routh 第一列</span><span class="en">Routh first column</span></th></tr>
+<tr><td>$k_1$</td><td>$s^4+2s^3+6s^2+3s+1$</td><td>$1,\ 2,\ \tfrac92,\ \tfrac{23}9,\ 1$</td></tr>
+<tr><td>$k_2$</td><td>$s^4+3s^3+6s^2+2s+1$</td><td>$1,\ 3,\ \tfrac{16}3,\ \tfrac{23}{16},\ 1$</td></tr>
+<tr><td>$k_3$</td><td>$s^4+2s^3+4s^2+3s+2$</td><td>$1,\ 2,\ \tfrac52,\ \tfrac75,\ 2$</td></tr>
+<tr><td>$k_4$</td><td>$s^4+3s^3+4s^2+2s+2$</td><td>$1,\ 3,\ \tfrac{10}3,\ \tfrac15,\ 2$</td></tr>
+</table></div>
+<p class="zh">四个都稳定 ⟹ 特征多项式对所有参数稳定。再检查没有不稳定对消：$C$ 的极点在 0，而 $P$ 的零点 $-b_2/b_1\in[-1,-\frac13]$；$P$ 的极点是 $s^2+a_1s+a_2$ 的根，在左半平面。$P$ proper、$C$ strictly proper ⟹ 适定。<b>结论：对所有参数都（内）稳定。</b></p>
+<p class="en">All four are stable ⟹ the characteristic polynomial is stable for every parameter. No unstable cancellation: $C$ has poles at 0 while the zero of $P$ is $-b_2/b_1\in[-1,-\frac13]$, and the poles of $P$ (roots of $s^2+a_1s+a_2$) are in the LHP. $P$ proper, $C$ strictly proper ⟹ well-posed. <b>Answer: yes, (internally) stable for all parameters.</b></p>
+<div class="trap"><span class="lbl"><span class="zh">易错</span><span class="en">Trap</span></span><span class="zh">$k_4$ 的 $s^1$ 行只有 $\frac15$，比较小，算错一个数就会得出错误结论，Routh 最好写成分数算。</span><span class="en">The $s^1$ entry of $k_4$ is only $\frac15$ — one arithmetic slip flips the conclusion, so keep fractions exact.</span></div>
+<a class="btn calc" href="calc.html?kh=1,1;2,3;4,6;2,3;1,2#khar"><span class="zh">计算器验证</span><span class="en">Verify</span></a>
+</div></details>
+
+<h3 id="hw2-322" data-toc data-zh="3.22 (K, τ) 稳定区域" data-en="3.22 (K, τ) region" data-kw="stability region two parameters K tau plane unity feedback plot">3.22 <span class="zh">$(K,\tau)$ 平面的稳定区域</span><span class="en">Stability region in the $(K,\tau)$ plane</span></h3>
+<div class="card">
+$$L(s)=\frac{K(s+2)}{s(1+\tau s)(1+2s)}\qquad(\text{unity negative feedback})$$
+<p class="zh">求并画出 $(K,\tau)$ 平面上的稳定区域。</p><p class="en">Determine and plot the region of stability in the $(K,\tau)$ plane.</p>
+</div>
+<details class="sol"><summary><span class="zh">解答</span><span class="en">Solution</span></summary><div class="body">
+<p class="zh"><b>特征多项式</b>：$s(1+\tau s)(1+2s)+K(s+2)=0$，展开 $s(1+\tau s)(1+2s)=2\tau s^3+(\tau+2)s^2+s$：</p>
+<p class="en"><b>Characteristic polynomial</b>: $s(1+\tau s)(1+2s)+K(s+2)=0$ with $s(1+\tau s)(1+2s)=2\tau s^3+(\tau+2)s^2+s$:</p>
+$$c(s)=2\tau s^3+(\tau+2)s^2+(1+K)s+2K$$
+<div class="tbl-wrap"><table class="routh"><tr><td class="row-h">$s^3$</td><td>$2\tau$</td><td>$1+K$</td></tr><tr><td class="row-h">$s^2$</td><td>$\tau+2$</td><td>$2K$</td></tr><tr><td class="row-h">$s^1$</td><td>$\dfrac{(\tau+2)(1+K)-4\tau K}{\tau+2}$</td><td></td></tr><tr><td class="row-h">$s^0$</td><td>$2K$</td><td></td></tr></table></div>
+<p class="zh">（$\tau$ 是时间常数，取 $\tau>0$；可以验证 $\tau<0$ 时第一列不可能同号。）条件：</p>
+<p class="en">($\tau$ is a time constant, so $\tau>0$; one can check that for $\tau<0$ the first column can never have a single sign.) Conditions:</p>
+$$\tau>0,\qquad K>0,\qquad (\tau+2)(1+K)-4\tau K>0\iff \tau(1-3K)+2(1+K)>0$$
+<ul>
+<li class="zh">$0<K\le\frac13$：对所有 $\tau>0$ 都稳定。</li><li class="en">$0<K\le\frac13$: stable for every $\tau>0$.</li>
+<li class="zh">$K>\frac13$：$\tau<\dfrac{2(1+K)}{3K-1}$。边界曲线过 $(1,2)$、$(2,1.2)$、$(3,1)$，$K\to\frac13^+$ 时 $\tau\to\infty$，$K\to\infty$ 时 $\tau\to\frac23$。</li>
+<li class="en">$K>\frac13$: $\tau<\dfrac{2(1+K)}{3K-1}$. The boundary passes through $(1,2)$, $(2,1.2)$, $(3,1)$, with $\tau\to\infty$ as $K\to\frac13^+$ and $\tau\to\frac23$ as $K\to\infty$.</li>
+<li class="zh">等价写法：$\tau\le\frac23$ 时只需 $K>0$；$\tau>\frac23$ 时 $0<K<\dfrac{\tau+2}{3\tau-2}$。</li>
+<li class="en">Equivalently: for $\tau\le\frac23$ only $K>0$ is needed; for $\tau>\frac23$, $0<K<\dfrac{\tau+2}{3\tau-2}$.</li>
+</ul>
+<canvas class="region" id="hw322plot"></canvas>
+<div class="readout" id="hw322read"></div>
+<p class="small muted"><span class="zh">绿色 = 稳定（逐点用 Routh 判定）；红色虚线 = 解析边界 $\tau=\frac{2(1+K)}{3K-1}$。鼠标移到图上看坐标。</span><span class="en">Green = stable (Routh test at each grid point); red dashed = analytic boundary $\tau=\frac{2(1+K)}{3K-1}$. Hover to read coordinates.</span></p>
+<a class="btn calc" href="calc.html?preset=hw322#region"><span class="zh">在计算器中调整</span><span class="en">Open in calculator</span></a>
+</div></details>
+
+<div class="foot"><span class="zh">题目来源：ECE3250 Homework 1（Ch.2: 2.4, 2.9, 2.10, 2.16）、Homework 2（Ch.3: 3.4, 3.19, 3.17, 3.22）。</span><span class="en">Problems: ECE3250 Homework 1 (Ch. 2: 2.4, 2.9, 2.10, 2.16) and Homework 2 (Ch. 3: 3.4, 3.19, 3.17, 3.22).</span></div>
+</main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cv = document.getElementById('hw322plot');
+  const draw = () => {
+    if (!cv.offsetParent) return;
+    const sys = CM.compileNum('s*(1+t*s)*(1+2*s)+K*(s+2)');
+    UI.regionPlot(cv, {
+      xr: [0, 5], yr: [0, 6], xl: 'K', yl: 'τ', readout: document.getElementById('hw322read'),
+      f: (K, t) => t > 0 && CM.routhFloat(sys.f({ K, t })),
+      curves: [{ f: (K) => (K > 1 / 3 ? 2 * (1 + K) / (3 * K - 1) : NaN) }],
+    });
+  };
+  const det = cv.closest('details');
+  det.addEventListener('toggle', draw);
+  window.addEventListener('resize', draw);
+  draw();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>题目处理 Problem types · ECE3250 期中速成</title>
+<script>try{document.documentElement.className='L-'+(localStorage.getItem('ece3250-lang')||'zh')}catch(e){}</script>
+<link rel="stylesheet" href="assets/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=1">
+<script defer src="assets/vendor/katex/katex.min.js"></script>
+<script defer src="assets/vendor/katex/auto-render.min.js"></script>
+<script defer src="assets/search-index.js?v=1"></script>
+<script defer src="assets/ui.js?v=1"></script>
+</head>
+<body>
+<header id="topnav"></header>
+<div class="wrap with-toc">
+<aside class="toc" data-auto></aside>
+<main>
+<h1><span class="zh">题目处理：按题型拆解</span><span class="en">Problem types: how to attack each one</span>
+<small><span class="zh">每类题：看到什么信号 → 按什么步骤 → 答案写成什么样 → 哪里会丢分。最后附一个对应的计算器。</span><span class="en">For each type: what to look for → the steps → what the answer should look like → where marks are lost, plus the matching calculator.</span></small></h1>
+
+<div class="tip"><span class="lbl"><span class="zh">考场通用</span><span class="en">Exam habits</span></span>
+<span class="zh">① 多项式统一写成降幂 $a_0s^n+\dots+a_n$，先把首项化正；② Routh、极点配置一律用分数算，不要用小数；③ 求出参数范围后代入一个内点、一个外点检查；④ 稳定性结论写完整：“稳定 / 不稳定 + 依据（Routh 第一列 / 极点位置 / 定理）”。</span>
+<span class="en">① Always write polynomials in descending powers $a_0s^n+\dots+a_n$ with $a_0>0$; ② keep Routh and pole-placement arithmetic in fractions, not decimals; ③ after finding a parameter range, test one point inside and one outside; ④ state stability conclusions fully: “stable / unstable + reason (Routh first column / pole locations / theorem)”.</span></div>
+
+<!-- 1 -->
+<h2 id="t-model" data-zh="1 物理系统 → 状态空间" data-en="1 Physical system → state space" data-kw="modeling circuit rlc kcl kvl mechanical newton electromechanical motor state variables">1 · <span class="zh">物理系统 → 状态空间</span><span class="en">Physical system → state space</span></h2>
+<p><b><span class="zh">识别</span><span class="en">Signals</span></b>：<span class="zh">给电路图 / 小车弹簧阻尼 / 电机，问 “write a state-space model”。</span><span class="en">A circuit, carts with springs/dampers, or a motor, and “write a state-space model”.</span></p>
+<ol class="steps">
+<li><span class="zh"><b>定输入、输出</b>，选状态：每个电容电压、每个电感电流；每个质量的位置和速度；电机取 $i_a$ 和 $\omega$（要位置再加 $\theta$）。</span><span class="en"><b>Fix input and output</b>, pick states: every capacitor voltage, every inductor current; position and velocity of every mass; for a motor $i_a$ and $\omega$ (add $\theta$ if position is needed).</span></li>
+<li><span class="zh"><b>写物理定律</b>：电容所在节点用 KCL（$C\dot v=\sum i$），电感所在回路用 KVL（$L\dot i=\sum v$），质量用 $M\ddot x=\sum F$，转动用 $J\ddot\theta=\sum\tau$。</span><span class="en"><b>Write the laws</b>: KCL at capacitor nodes ($C\dot v=\sum i$), KVL around inductor loops ($L\dot i=\sum v$), $M\ddot x=\sum F$ for masses, $J\ddot\theta=\sum\tau$ for rotation.</span></li>
+<li><span class="zh"><b>每个方程解出一个导数</b>，按状态顺序排成 $\dot x=Ax+bu$；输出写成 $y=cx+du$。</span><span class="en"><b>Solve each equation for one derivative</b>, stack them as $\dot x=Ax+bu$, and write $y=cx+du$.</span></li>
+<li><span class="zh">高阶 ODE $x^{(n)}+a_1x^{(n-1)}+\dots+a_nx=u$：$x_1=x,\dots,x_n=x^{(n-1)}$，最后一行 $[-a_n\ \cdots\ -a_1]$。</span><span class="en">For $x^{(n)}+a_1x^{(n-1)}+\dots+a_nx=u$: $x_1=x,\dots,x_n=x^{(n-1)}$, last row $[-a_n\ \cdots\ -a_1]$.</span></li>
+</ol>
+<div class="trap"><span class="lbl"><span class="zh">坑</span><span class="en">Traps</span></span><span class="zh">受控源 $gv_1$ 的方向（流出节点为负）；阻尼力是相对速度 $F(\dot x_1-\dot x_2)$；电机 KVL 里反电势 $K\dot\theta$ 的符号；$M$ 不能漏除。</span><span class="en">Direction of the controlled source $gv_1$ (leaving the node is negative); damper force uses relative velocity $F(\dot x_1-\dot x_2)$; sign of the back-emf $K\dot\theta$; don't forget to divide by $M$.</span></div>
+<p><a href="lectures.html#L3-rlc"><span class="zh">讲义：RLC 电路</span><span class="en">Notes: RLC circuit</span></a> · <a href="lectures.html#L4-motor"><span class="zh">直流电机</span><span class="en">DC motor</span></a> · <a href="lectures.html#L3-cart"><span class="zh">双小车</span><span class="en">two carts</span></a></p>
+
+<!-- 2 -->
+<h2 id="t-linear" data-zh="2 线性化" data-en="2 Linearization" data-kw="linearization operating point equilibrium jacobian deviation maglev pendulum nonlinear">2 · <span class="zh">非线性 → 线性化</span><span class="en">Nonlinear → linearize</span></h2>
+<p><b><span class="zh">识别</span><span class="en">Signals</span></b>：<span class="zh">方程里有 $\sin\theta$、$i^2/y^2$、乘积项；“linearize about …”、“operating point”。</span><span class="en">$\sin\theta$, $i^2/y^2$ or product terms; “linearize about …”, “operating point”.</span></p>
+<ol class="steps">
+<li><span class="zh">写成 $\dot x=f(x,u)$，$y=g(x,u)$（先像题型 1 那样选状态）。</span><span class="en">Write $\dot x=f(x,u)$, $y=g(x,u)$ (choose states as in type 1).</span></li>
+<li><span class="zh"><b>求工作点</b>：令 $f(x_0,u_0)=0$，题目通常给出期望输出 $y_0$（MagLev）或直接给工作点（单摆 $\theta=0$）。把 $x_0$ 每个分量和 $u_0$ 都解出来。</span><span class="en"><b>Operating point</b>: solve $f(x_0,u_0)=0$; usually the desired output $y_0$ is given (MagLev) or the point itself (pendulum $\theta=0$). Solve for every component of $x_0$ and for $u_0$.</span></li>
+<li><span class="zh"><b>求 Jacobian</b>：$A_{ij}=\partial f_i/\partial x_j$，$b_i=\partial f_i/\partial u$，$c_j=\partial g/\partial x_j$，$d=\partial g/\partial u$，<b>先求导再代入工作点</b>。</span><span class="en"><b>Jacobians</b>: $A_{ij}=\partial f_i/\partial x_j$, $b_i=\partial f_i/\partial u$, $c_j=\partial g/\partial x_j$, $d=\partial g/\partial u$ — <b>differentiate first, then substitute</b>.</span></li>
+<li><span class="zh">答案写成 $\dot{\tilde x}=A\tilde x+b\tilde u,\ \tilde y=c\tilde x+d\tilde u$，并注明 $\tilde x=x-x_0$ 等。</span><span class="en">Answer: $\dot{\tilde x}=A\tilde x+b\tilde u,\ \tilde y=c\tilde x+d\tilde u$ with $\tilde x=x-x_0$ etc. stated.</span></li>
+</ol>
+<div class="key"><span class="lbl"><span class="zh">常用导数</span><span class="en">Handy derivatives</span></span>
+$\frac{\partial}{\partial\theta}\sin\theta=\cos\theta$；$\frac{\partial}{\partial x_1}\frac{x_1^2}{x_2^2}=\frac{2x_1}{x_2^2}$，$\frac{\partial}{\partial x_2}\frac{x_1^2}{x_2^2}=-\frac{2x_1^2}{x_2^3}$；$\frac{\partial}{\partial x_2}\frac{h(x)}{L(x_2)}\Big|_0=\frac{\partial h/\partial x_2}{L}-\frac{h\,L'}{L^2}$<span class="zh">，若工作点处 $h=0$ 则第二项消失（MagLev 的 $A_{12}=0$）。</span><span class="en">; if $h=0$ at the operating point the second term vanishes (MagLev's $A_{12}=0$).</span></div>
+<div class="trap"><span class="lbl"><span class="zh">坑</span><span class="en">Traps</span></span><span class="zh">忘了求 $u_0$；直接对线性化前的 $x$ 写答案（应为偏差变量）；把 $\cos\theta$ 代成 0 而不是 1（在 $\theta=0$ 处 $\cos=1$）；倒立摆在竖直向上平衡时 $\sin\theta\approx\theta$ 但重力项符号为正（不稳定）。</span><span class="en">Forgetting $u_0$; writing the result in $x$ instead of deviation variables; substituting $\cos 0=0$ instead of 1; for an upright pendulum the gravity term keeps a positive sign (unstable).</span></div>
+<p><a href="lectures.html#L5-maglev">MagLev</a> · <a href="homework.html#hw1-24">HW1 2.4</a></p>
+
+<!-- 3 -->
+<h2 id="t-ss2tf" data-zh="3 状态空间 → 传递函数" data-en="3 State space → TF" data-kw="state space to transfer function sI-A inverse cofactor determinant output feedback closed loop">3 · <span class="zh">状态空间 → 传递函数（含闭环）</span><span class="en">State space → transfer function (incl. closed loop)</span></h2>
+<ol class="steps">
+<li><span class="zh">写 $sI-A$，算 $\det(sI-A)=a(s)$（分母）。</span><span class="en">Form $sI-A$ and compute $\det(sI-A)=a(s)$ (denominator).</span></li>
+<li><span class="zh">只需要 $(sI-A)^{-1}$ 中被 $c$ 和 $b$ 选中的元素：$(sI-A)^{-1}_{ij}=\dfrac{(-1)^{i+j}M_{ji}}{\det(sI-A)}$（注意下标转置）。若 $c=e_k^T$、$b=\beta e_l$，则 $G=\beta\,(sI-A)^{-1}_{kl}$。</span><span class="en">Only the entries picked by $c$ and $b$ are needed: $(sI-A)^{-1}_{ij}=\dfrac{(-1)^{i+j}M_{ji}}{\det(sI-A)}$ (note the transposed minor). If $c=e_k^T$, $b=\beta e_l$, then $G=\beta\,(sI-A)^{-1}_{kl}$.</span></li>
+<li><span class="zh">$G=c(sI-A)^{-1}b+d$；化简后检查：分母阶数 = $n$（除非有对消），$d\ne0$ 时 bi-proper。</span><span class="en">$G=c(sI-A)^{-1}b+d$; check that the denominator has degree $n$ (unless something cancels) and that $d\ne0$ makes it bi-proper.</span></li>
+<li><span class="zh">闭环 $u=r-Ky$：$A_{cl}=A-Kbc$，TF $=\frac{G}{1+KG}$。</span><span class="en">Closed loop $u=r-Ky$: $A_{cl}=A-Kbc$, TF $=\frac{G}{1+KG}$.</span></li>
+</ol>
+<div class="tip"><span class="lbl"><span class="zh">2×2 秒算</span><span class="en">2×2 shortcut</span></span>$\begin{bmatrix}a&b\\c&d\end{bmatrix}^{-1}=\frac{1}{ad-bc}\begin{bmatrix}d&-b\\-c&a\end{bmatrix}$。<span class="zh">例</span><span class="en">E.g.</span> $A=\begin{bmatrix}0&1\\-1&-2\end{bmatrix},b=\begin{bmatrix}0\\1\end{bmatrix},c=[2\ 1]$ ⟹ $G=\frac{s+2}{s^2+2s+1}$.</div>
+<p><a class="btn calc" href="calc.html?A=0%201%3B-1%20-2&B=0%3B1&C=2%201&D=0#ss"><span class="zh">计算器</span><span class="en">Calculator</span></a></p>
+
+<!-- 4 -->
+<h2 id="t-block" data-zh="4 方框图化简" data-en="4 Block diagram reduction" data-kw="block diagram reduction summing junction pickoff loop feedback series parallel algebraic elimination mason">4 · <span class="zh">方框图化简</span><span class="en">Block-diagram reduction</span></h2>
+<p><b><span class="zh">两条路，选更稳的那条</span><span class="en">Two routes — pick the safer one</span></b></p>
+<ol class="steps">
+<li><span class="zh"><b>代数消元（推荐，最不容易错）</b>：给每个求和点输出、每个引出点起一个名字（$e,v,\dots$），每个求和点写一条方程（注意 “−” 号），消去中间变量。</span><span class="en"><b>Algebraic elimination (recommended, hardest to get wrong)</b>: name the output of every summing junction and every pickoff ($e,v,\dots$), write one equation per junction (mind the “−”), eliminate the intermediates.</span></li>
+<li><span class="zh"><b>图形化简</b>：先串并联；再消最内层的环 $\frac{G}{1\mp GH}$；环与环交叉时移动求和点 / 引出点（补 $G$ 或 $1/G$）把它们拆开；一路化到单个方块。</span><span class="en"><b>Graphical reduction</b>: combine series/parallel; close the innermost loops $\frac{G}{1\mp GH}$; if loops overlap, move summing/pickoff points (inserting $G$ or $1/G$) to separate them; repeat until one block remains.</span></li>
+<li><span class="zh">多输入（如 $R$ 和 $D$）：叠加原理，每次只留一个输入，其余置 0。所有闭环传递函数的分母应该相同。</span><span class="en">Several inputs (e.g. $R$ and $D$): superposition — keep one input at a time. All closed-loop TFs must share the same denominator.</span></li>
+</ol>
+<div class="trap"><span class="lbl"><span class="zh">坑</span><span class="en">Traps</span></span><span class="zh">没标 “−” 的求和输入是 “+”（课件复杂例的 Loop 1 是正反馈）；移动求和点“向前移补 $1/G$、向后移补 $G$”别弄反；引出点在方块后时，移到方块前要补 $G$。</span><span class="en">Unmarked summing inputs are “+” (Loop 1 in the slide example is positive feedback); moving a junction backwards inserts $1/G$, forwards inserts $G$ — don't swap; moving a pickoff from after a block to before it inserts $G$.</span></div>
+<p><a href="lectures.html#L8-big"><span class="zh">讲义：复杂反馈系统</span><span class="en">Notes: complicated system</span></a> · <a href="homework.html#hw1-210">HW1 2.10</a></p>
+
+<!-- 5 -->
+<h2 id="t-pf" data-zh="5 拉氏反变换 / 响应" data-en="5 Inverse Laplace / responses" data-kw="inverse laplace partial fraction residue impulse response step response dc gain final value theorem">5 · <span class="zh">拉氏反变换、冲激/阶跃响应、DC gain</span><span class="en">Inverse Laplace, impulse/step responses, DC gain</span></h2>
+<ol class="steps">
+<li><span class="zh">冲激响应 $g=\L^{-1}[G]$；阶跃响应 $y=\L^{-1}[G/s]$。若 $\deg$ 分子 $\ge$ 分母，先做多项式除法（产生 $\delta$ 项）。</span><span class="en">Impulse response $g=\L^{-1}[G]$; step response $y=\L^{-1}[G/s]$. If the numerator degree $\ge$ denominator degree, divide first (gives $\delta$ terms).</span></li>
+<li><span class="zh">分母因式分解，写出部分分式形式：单极点 $\frac{c}{s-p}$；$r$ 重极点 $\frac{c_1}{s-p}+\dots+\frac{c_r}{(s-p)^r}$；共轭对两个复系数（或合成 $\frac{As+B}{(s+\alpha)^2+\omega^2}$）。</span><span class="en">Factor the denominator and set up the expansion: simple pole $\frac{c}{s-p}$; $r$-fold pole $\frac{c_1}{s-p}+\dots+\frac{c_r}{(s-p)^r}$; a conjugate pair either with two complex coefficients or combined as $\frac{As+B}{(s+\alpha)^2+\omega^2}$.</span></li>
+<li><span class="zh">系数：$c=\lim(s-p)G$；重极点从最高次往下求导；或者通分比较系数。</span><span class="en">Coefficients: $c=\lim(s-p)G$; for repeated poles differentiate downward from the highest power; or clear denominators and compare coefficients.</span></li>
+<li><span class="zh">查表：$\frac{1}{(s+\alpha)^{k}}\to\frac{t^{k-1}}{(k-1)!}e^{-\alpha t}$；共轭对 $ce^{pt}+\bar ce^{\bar pt}=2e^{\alpha t}(x\cos\beta t-y\sin\beta t)$。最后乘 $\sigma(t)$。</span><span class="en">Table: $\frac{1}{(s+\alpha)^{k}}\to\frac{t^{k-1}}{(k-1)!}e^{-\alpha t}$; conjugate pair $ce^{pt}+\bar ce^{\bar pt}=2e^{\alpha t}(x\cos\beta t-y\sin\beta t)$. Multiply by $\sigma(t)$.</span></li>
+<li><span class="zh">DC gain：先确认极点全在开左半平面，再取 $G(0)$。</span><span class="en">DC gain: first confirm all poles are in the OLHP, then take $G(0)$.</span></li>
+</ol>
+<p><a class="btn calc" href="calc.html?pfn=2&pfd=s(s%5E2%2B2s%2B2)#pf"><span class="zh">部分分式计算器</span><span class="en">Partial-fraction calculator</span></a></p>
+
+<!-- 6 -->
+<h2 id="t-real" data-zh="6 实现（控制器型/观测器型）" data-en="6 Realization" data-kw="realization controller form observer form controllable canonical form companion">6 · <span class="zh">传递函数 → 状态空间实现</span><span class="en">Transfer function → state-space realization</span></h2>
+<ol class="steps">
+<li><span class="zh">把 $G$ 写成 $\frac{b_0s^n+\dots+b_n}{a_0s^n+\dots+a_n}$，分子补 0 到 $n$ 次（strictly proper 时 $b_0=0$）。</span><span class="en">Write $G=\frac{b_0s^n+\dots+b_n}{a_0s^n+\dots+a_n}$, padding the numerator with zeros up to degree $n$ ($b_0=0$ if strictly proper).</span></li>
+<li><span class="zh">控制器型：$A$ 第一行 $-a_k/a_0$，次对角 1；$b=e_1/a_0$；$c_k=b_k-b_0a_k/a_0$；$d=b_0/a_0$。</span><span class="en">Controller form: first row of $A$ is $-a_k/a_0$, ones on the subdiagonal; $b=e_1/a_0$; $c_k=b_k-b_0a_k/a_0$; $d=b_0/a_0$.</span></li>
+<li><span class="zh">观测器型：$A$ 第一列 $-a_k/a_0$，超对角 1；$b_k=b_k-b_0a_k/a_0$；$c=e_1^T/a_0$；$d=b_0/a_0$。</span><span class="en">Observer form: first column of $A$ is $-a_k/a_0$, ones on the superdiagonal; $b_k=b_k-b_0a_k/a_0$; $c=e_1^T/a_0$; $d=b_0/a_0$.</span></li>
+<li><span class="zh">自检：用 $c(sI-A)^{-1}b+d$ 算回去。</span><span class="en">Check: recompute $c(sI-A)^{-1}b+d$.</span></li>
+</ol>
+<div class="trap"><span class="lbl"><span class="zh">坑</span><span class="en">Traps</span></span><span class="zh">课件控制器型的状态顺序是 $[x^{(n-1)},\dots,x]$（最高阶在上），和很多教材的 $[x,\dot x,\dots]$ 相反，按课件写。bi-proper 时别忘了 $d$。</span><span class="en">The slides order the states $[x^{(n-1)},\dots,x]$ (highest derivative first), opposite to many textbooks — follow the slides. For bi-proper $G$ don't forget $d$.</span></div>
+<p><a class="btn calc" href="calc.html?tfn=s%2B2&tfd=s%5E2%2B2s%2B1#ss"><span class="zh">计算器</span><span class="en">Calculator</span></a></p>
+
+<!-- 7 -->
+<h2 id="t-bibo" data-zh="7 BIBO 稳定判断" data-en="7 BIBO stability" data-kw="bibo bounded input bounded output absolutely integrable impulse response counterexample">7 · <span class="zh">BIBO 稳定判断 / 证明</span><span class="en">BIBO stability: decide / prove</span></h2>
+<ul>
+<li><span class="zh"><b>给 $G(s)$</b>：先看是否 proper（不是 ⟹ 不稳定），再看极点（全部 $\operatorname{Re}<0$ ⟹ 稳定）。</span><span class="en"><b>Given $G(s)$</b>: check properness first (non-proper ⟹ unstable), then poles (all $\operatorname{Re}<0$ ⟹ stable).</span></li>
+<li><span class="zh"><b>给 $g(t)$</b>：算 $\int_0^\infty|g|dt$，有限 ⟺ 稳定。</span><span class="en"><b>Given $g(t)$</b>: compute $\int_0^\infty|g|dt$; finite ⟺ stable.</span></li>
+<li><span class="zh"><b>按定义证不稳定</b>：给一个有界输入（阶跃 $\sigma$、$\sin\omega_0 t$ 共振），算出无界输出。</span><span class="en"><b>Disprove by definition</b>: exhibit a bounded input (step $\sigma$, resonant $\sin\omega_0 t$) with an unbounded output.</span></li>
+<li><span class="zh"><b>按定义证稳定</b>：$|y(t)|\le\int_0^t|g(\tau)||u(t-\tau)|d\tau\le M\int_0^\infty|g|$。</span><span class="en"><b>Prove by definition</b>: $|y(t)|\le\int_0^t|g(\tau)||u(t-\tau)|d\tau\le M\int_0^\infty|g|$.</span></li>
+</ul>
+<div class="ex"><span class="lbl"><span class="zh">反例模板</span><span class="en">Counterexample template</span></span><span class="zh">$G=\frac{1}{s^2+\omega_0^2}$：取 $u=\sin\omega_0t$（有界），$Y=\frac{\omega_0}{(s^2+\omega_0^2)^2}$ 是二重虚轴极点，$y$ 含 $t\cos\omega_0t$，无界 ⟹ 不稳定。</span><span class="en">$G=\frac{1}{s^2+\omega_0^2}$: take $u=\sin\omega_0t$ (bounded); $Y=\frac{\omega_0}{(s^2+\omega_0^2)^2}$ has double imaginary-axis poles, $y$ contains $t\cos\omega_0t$, unbounded ⟹ unstable.</span></div>
+
+<!-- 8 -->
+<h2 id="t-routh" data-zh="8 Routh 判断稳定" data-en="8 Routh: is it stable?" data-kw="routh table polynomial stability first column necessary condition zero row">8 · <span class="zh">Routh：多项式稳不稳定</span><span class="en">Routh: is the polynomial stable?</span></h2>
+<ol class="steps">
+<li><span class="zh">首项化正；<b>先看必要条件</b>：有系数 $\le0$ 或缺项 ⟹ 直接“不稳定”。</span><span class="en">Make $a_0>0$; <b>check the necessary condition</b>: any coefficient $\le0$ or missing ⟹ unstable immediately.</span></li>
+<li><span class="zh">前两行：偶数位、奇数位系数。之后每个元素 = $\dfrac{(\text{上一行首})\times(\text{上上行右邻})-(\text{上上行首})\times(\text{上一行右邻})}{\text{上一行首}}$。</span><span class="en">First two rows: even- and odd-indexed coefficients. Each new entry $=\dfrac{(\text{first of row above})\times(\text{right neighbour two rows up})-(\text{first two rows up})\times(\text{right neighbour of row above})}{\text{first of row above}}$.</span></li>
+<li><span class="zh">第一列全 $>0$ ⟹ 稳定；出现负数或 0 ⟹ 不稳定（0 时停止）。</span><span class="en">First column all $>0$ ⟹ stable; a negative or zero ⟹ unstable (stop at a zero).</span></li>
+</ol>
+<div class="tip"><span class="lbl"><span class="zh">提速</span><span class="en">Speed-ups</span></span><span class="zh">可以把一整行同乘一个正数（不改变符号）；三阶 $s^3+a_1s^2+a_2s+a_3$ 稳定 ⟺ $a_i>0$ 且 $a_1a_2>a_3$；二阶 ⟺ 系数全正。</span><span class="en">You may scale a whole row by a positive number; cubic $s^3+a_1s^2+a_2s+a_3$ is stable ⟺ all $a_i>0$ and $a_1a_2>a_3$; quadratic ⟺ all coefficients positive.</span></div>
+<p><a class="btn calc" href="calc.html?routh=s%5E4%2B2s%5E3%2B9s%5E2%2B2s%2B5#routh"><span class="zh">Routh 计算器</span><span class="en">Routh calculator</span></a></p>
+
+<!-- 9 -->
+<h2 id="t-routh-k" data-zh="9 求 K 的稳定范围" data-en="9 Range of K" data-kw="range of K gain stability routh parameter inequality closed loop characteristic polynomial">9 · <span class="zh">求使闭环稳定的 $K$ 范围</span><span class="en">Range of $K$ for closed-loop stability</span></h2>
+<ol class="steps">
+<li><span class="zh"><b>写特征多项式</b>：单位负反馈 $L=\frac{N}{D}$ ⟹ $D+KN$；一般 $P=\frac ba, C=\frac qp$ ⟹ $ap+bq$。确认适定（$P$ strictly proper 就自动满足）。</span><span class="en"><b>Characteristic polynomial</b>: unity feedback $L=\frac{N}{D}$ ⟹ $D+KN$; in general $P=\frac ba, C=\frac qp$ ⟹ $ap+bq$. Confirm well-posedness (automatic if $P$ is strictly proper).</span></li>
+<li><span class="zh">按 $s$ 降幂整理，系数是 $K$ 的表达式。</span><span class="en">Collect in descending powers of $s$; coefficients are expressions in $K$.</span></li>
+<li><span class="zh">Routh 表（含 $K$），第一列每一项 $>0$ ⟹ 一组不等式。分式项要注意分母符号（通常分母本身就是前面要求 $>0$ 的项）。</span><span class="en">Routh table with $K$; require every first-column entry $>0$ ⟹ a set of inequalities. For fractions mind the denominator's sign (usually it is an earlier entry already required $>0$).</span></li>
+<li><span class="zh">解每个不等式，取<b>交集</b>，写成区间；二次不等式求根后判断开口。</span><span class="en">Solve each inequality and take the <b>intersection</b>; for quadratics find the roots and check the sign pattern.</span></li>
+<li><span class="zh">代一个区间内的 $K$ 和一个区间外的 $K$ 验证。</span><span class="en">Verify with one $K$ inside and one outside the interval.</span></li>
+</ol>
+<div class="ex"><span class="lbl"><span class="zh">模板</span><span class="en">Template</span></span><span class="zh">“The closed-loop characteristic polynomial is $c(s)=\dots$. Routh table: … The system is stable iff all first-column entries are positive: $\dots>0,\ \dots>0$. Hence $\underline{\ a<K<b\ }$.”</span><span class="en">“The closed-loop characteristic polynomial is $c(s)=\dots$. Routh table: … The system is stable iff all first-column entries are positive: $\dots>0,\ \dots>0$. Hence $\underline{\ a<K<b\ }$.”</span></div>
+<p><a href="homework.html#hw2-34">HW2 3.4(c)</a> · <a href="homework.html#hw2-319">HW2 3.19</a> · <a class="btn calc" href="calc.html?routh=s%5E4%2B2s%5E3%2B4s%5E2%2B4s%2BK&param=K#routh"><span class="zh">含参 Routh 计算器</span><span class="en">Parametric Routh</span></a></p>
+
+<!-- 10 -->
+<h2 id="t-region" data-zh="10 两参数稳定区域" data-en="10 Two-parameter region" data-kw="stability region two parameters plane plot pi controller kp ki tau boundary curve">10 · <span class="zh">两参数稳定区域（作图）</span><span class="en">Two-parameter stability region (sketch)</span></h2>
+<ol class="steps">
+<li><span class="zh">和题型 9 一样列出第一列不等式，现在含两个参数。</span><span class="en">As in type 9, list the first-column inequalities — now in two parameters.</span></li>
+<li><span class="zh">每个不等式取等号得到一条边界（直线 / 双曲线），标出满足的一侧。</span><span class="en">Turn each inequality into its boundary (line / hyperbola) and mark the satisfying side.</span></li>
+<li><span class="zh">区域 = 所有半平面的交集；标出关键点（截距、渐近线）。描述时按某个参数分段写。</span><span class="en">The region is the intersection; label key points (intercepts, asymptotes). Describe it piecewise in one parameter.</span></li>
+</ol>
+<p><span class="zh">例：PI 控制</span><span class="en">E.g. PI control</span> $K_I>0,\ K_P>\frac{K_I}{3}-0.2$；HW2 3.22 $K>0,\ \tau>0,\ \tau(1-3K)+2+2K>0$。</p>
+<p><a class="btn calc" href="calc.html?preset=hw322#region"><span class="zh">区域绘图计算器</span><span class="en">Region plotter</span></a></p>
+
+<!-- 11 -->
+<h2 id="t-khar" data-zh="11 Kharitonov 鲁棒稳定" data-en="11 Kharitonov" data-kw="kharitonov robust stability interval polynomial uncertain parameters vertex">11 · <span class="zh">参数在区间内：Kharitonov</span><span class="en">Parameters in intervals: Kharitonov</span></h2>
+<ol class="steps">
+<li><span class="zh">写出闭环特征多项式，确认每个系数<b>独立</b>在一个区间里变化（若两个系数依赖同一个参数，就不是区间多项式，不能直接用）。</span><span class="en">Write the closed-loop characteristic polynomial and check that each coefficient varies <b>independently</b> in an interval (if two coefficients share a parameter it is not an interval polynomial).</span></li>
+<li><span class="zh">从 $a_0$ 开始按 LLUU / LUUL / ULLU / UULL 写出 4 个多项式。</span><span class="en">Starting at $a_0$, write the four polynomials with LLUU / LUUL / ULLU / UULL.</span></li>
+<li><span class="zh">4 个都 Routh 稳定 ⟹ 全部稳定；有一个不稳定 ⟹ 不是对所有参数都稳定（那个多项式就是反例）。</span><span class="en">All four Routh-stable ⟹ all members stable; one unstable ⟹ not robustly stable (that polynomial is a counterexample).</span></li>
+</ol>
+<p><a href="homework.html#hw2-317">HW2 3.17</a> · <a class="btn calc" href="calc.html?kh=1,1;3,4;3,4;2,3;0.5,1#khar"><span class="zh">Kharitonov 计算器</span><span class="en">Kharitonov calculator</span></a></p>
+
+<!-- 12 -->
+<h2 id="t-internal" data-zh="12 内稳定判断" data-en="12 Internal stability" data-kw="internal stability gang of four unstable pole zero cancellation well posed characteristic polynomial">12 · <span class="zh">闭环内稳定判断</span><span class="en">Is the closed loop internally stable?</span></h2>
+<ol class="steps">
+<li><span class="zh">把 $P=\frac ba$、$C=\frac qp$ 各自化成互质形式。</span><span class="en">Reduce $P=\frac ba$ and $C=\frac qp$ to coprime form.</span></li>
+<li><span class="zh"><b>适定</b>：$1+P(\infty)C(\infty)\ne0$（任一 strictly proper 就成立）。不满足 ⟹ 不内稳定。</span><span class="en"><b>Well-posed</b>: $1+P(\infty)C(\infty)\ne0$ (automatic if either is strictly proper). Otherwise ⟹ not internally stable.</span></li>
+<li><span class="zh">算 $c=ap+bq$，Routh / 求根：稳定 ⟺ 内稳定。</span><span class="en">Compute $c=ap+bq$; Routh / roots: stable ⟺ internally stable.</span></li>
+<li><span class="zh">（另一条路）检查 $PC$ 中是否有<b>右半平面（含虚轴）的零极点对消</b>，有 ⟹ 不内稳定；没有 ⟹ 只需检查一个 gang-of-four 传递函数。</span><span class="en">(Alternative) look for <b>pole/zero cancellations in the closed RHP</b> within $PC$: any ⟹ not internally stable; none ⟹ checking one gang-of-four entry suffices.</span></li>
+</ol>
+<div class="trap"><span class="lbl"><span class="zh">坑</span><span class="en">Traps</span></span><span class="zh">只看 $\frac{PC}{1+PC}$（对消后看起来稳定）；忘了 non-proper 闭环；把“控制器不稳定”当成“闭环不稳定”。</span><span class="en">Checking only $\frac{PC}{1+PC}$ (looks stable after cancellation); missing a non-proper closed loop; confusing “unstable controller” with “unstable closed loop”.</span></div>
+<p><a href="lectures.html#L11-int"><span class="zh">讲义 5 个例子</span><span class="en">5 examples in the notes</span></a> · <a class="btn calc" href="calc.html?ib=1&ia=s-1&iq=s-1&ip=s%2B1#internal"><span class="zh">内稳定计算器</span><span class="en">Internal-stability calculator</span></a></p>
+
+<!-- 13 -->
+<h2 id="t-pole" data-zh="13 极点配置设计" data-en="13 Pole placement" data-kw="pole placement diophantine sylvester controller design desired poles proper strictly proper order">13 · <span class="zh">极点配置（Diophantine）</span><span class="en">Pole placement (Diophantine)</span></h2>
+<ol class="steps">
+<li><span class="zh">$P=\frac{b}{a}$，$n=\deg a$。<b>定控制器阶数</b>：proper 取 $m=n-1$，strictly proper 取 $m=n$（题目指定就照题目）。</span><span class="en">$P=\frac{b}{a}$, $n=\deg a$. <b>Controller order</b>: proper $m=n-1$, strictly proper $m=n$ (unless the problem specifies).</span></li>
+<li><span class="zh"><b>期望多项式</b> $c(s)=\prod(s-\lambda_i)$，必须恰好 $n+m$ 个极点；共轭对 $-\alpha\pm j\beta$ 对应 $s^2+2\alpha s+\alpha^2+\beta^2$。</span><span class="en"><b>Desired polynomial</b> $c(s)=\prod(s-\lambda_i)$ with exactly $n+m$ poles; a pair $-\alpha\pm j\beta$ gives $s^2+2\alpha s+\alpha^2+\beta^2$.</span></li>
+<li><span class="zh">设 $C=\frac{q_0s^m+\dots+q_m}{p_0s^m+\dots+p_m}$（strictly proper 时 $q_0=0$），展开 $a p+b q$ 与 $c$ 比较系数（或写 Sylvester 矩阵方程 $S(a,b,m+1)[p;q]=c$）。</span><span class="en">Let $C=\frac{q_0s^m+\dots+q_m}{p_0s^m+\dots+p_m}$ ($q_0=0$ if strictly proper); expand $ap+bq$ and match coefficients with $c$ (or write $S(a,b,m+1)[p;q]=c$).</span></li>
+<li><span class="zh">从最高次 / 最低次开始逐个解（通常 $p_0=c_0/a_0$ 和最后一个方程最简单）。</span><span class="en">Solve from the top and bottom equations first ($p_0=c_0/a_0$ and the constant-term equation are usually trivial).</span></li>
+<li><span class="zh">写出 $C(s)$，验证 $ap+bq=c$；如问 “stable controller?” 看 $p(s)$ 的根。</span><span class="en">Write $C(s)$ and verify $ap+bq=c$; for “stable controller?” check the roots of $p(s)$.</span></li>
+</ol>
+<div class="trap"><span class="lbl"><span class="zh">坑</span><span class="en">Traps</span></span><span class="zh">$b(s)$ 也要写成 $n$ 次（高次补 0），否则 Sylvester 矩阵错位；期望极点个数 ≠ $n+m$；忘了 $q_0=0$ 的约束。</span><span class="en">Pad $b(s)$ to degree $n$ or the Sylvester matrix misaligns; desired pole count ≠ $n+m$; forgetting $q_0=0$ for strictly proper controllers.</span></div>
+<p><a href="lectures.html#L12">L12</a> · <a href="lectures.html#L13-sp">L13</a> · <a class="btn calc" href="calc.html?pb=s-1&pa=s(s-2)&pm=1&pc=-1,-2,-3#pole"><span class="zh">极点配置计算器</span><span class="en">Pole-placement calculator</span></a></p>
+
+<!-- 14 -->
+<h2 id="t-concept" data-zh="14 概念题" data-en="14 Concept questions" data-kw="concept siso simo miso mimo causal noncausal static dynamic stabilization regulation proper 2dof open loop closed loop">14 · <span class="zh">概念 / 判断题速答</span><span class="en">Concept / true-false quick answers</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th><span class="zh">问题</span><span class="en">Question</span></th><th><span class="zh">答案要点</span><span class="en">Key answer</span></th></tr>
+<tr><td><span class="zh">MagLev 是 SISO/SIMO…？</span><span class="en">MagLev: SISO/SIMO…?</span></td><td><span class="zh">SISO（电压 → 位置）；先镇定再调节</span><span class="en">SISO (voltage → position); stabilize, then regulate</span></td></tr>
+<tr><td><span class="zh">iPendulum？</span><span class="en">iPendulum?</span></td><td><span class="zh">SIMO（力 → $x,\theta$）；镇定问题</span><span class="en">SIMO (force → $x,\theta$); a stabilization problem</span></td></tr>
+<tr><td><span class="zh">比例 / 积分 / 微分 系统</span><span class="en">Proportional / integral / derivative</span></td><td><span class="zh">static / dynamic / noncausal（课程口径）；PI 是 causal</span><span class="en">static / dynamic / noncausal (course convention); PI is causal</span></td></tr>
+<tr><td><span class="zh">开环 vs 闭环</span><span class="en">Open vs closed loop</span></td><td><span class="zh">闭环用输出修正输入（反馈）；开环按预定方式动作</span><span class="en">Closed loop corrects the input using the output (feedback); open loop follows a preset plan</span></td></tr>
+<tr><td><span class="zh">好控制系统的要求</span><span class="en">Goals of a good control system</span></td><td><span class="zh">稳定（第一位）、跟踪、抑制扰动、容忍不确定性</span><span class="en">Stability (first), tracking, disturbance rejection, robustness to uncertainty</span></td></tr>
+<tr><td><span class="zh">2DOF 的好处</span><span class="en">Why 2DOF</span></td><td><span class="zh">性能更好；能权衡跟踪与扰动抑制；1DOF 是特例 $C(r-y)$</span><span class="en">Better performance; trades off tracking vs disturbance rejection; 1DOF is the special case $C(r-y)$</span></td></tr>
+<tr><td><span class="zh">状态空间实现唯一吗？</span><span class="en">Is a realization unique?</span></td><td><span class="zh">不唯一，相似变换 $T$</span><span class="en">No — similarity transforms $T$</span></td></tr>
+<tr><td><span class="zh">系数全正 ⟹ 稳定？</span><span class="en">All coefficients positive ⟹ stable?</span></td><td><span class="zh">否（只是必要条件，二阶除外）</span><span class="en">No (necessary only, except for degree ≤ 2)</span></td></tr>
+<tr><td><span class="zh">$P$、$C$ 都稳定 ⟹ 闭环稳定？</span><span class="en">$P$, $C$ stable ⟹ closed loop stable?</span></td><td><span class="zh">否：$P=\frac1{(s+1)^3},C=10$ 不稳定</span><span class="en">No: $P=\frac1{(s+1)^3},C=10$ is unstable</span></td></tr>
+<tr><td><span class="zh">$P$、$C$ 都不稳定 ⟹ 闭环不稳定？</span><span class="en">$P$, $C$ unstable ⟹ closed loop unstable?</span></td><td><span class="zh">否：$P=\frac{s-1}{s(s-2)},C=\frac{33s-6}{s-25}$ 内稳定</span><span class="en">No: $P=\frac{s-1}{s(s-2)},C=\frac{33s-6}{s-25}$ is internally stable</span></td></tr>
+</table></div>
+
+<div class="foot"><span class="zh">配套：<a href="calc.html">计算器</a>可以检查每一类题的数值结果。</span><span class="en">Use the <a href="calc.html">calculators</a> to check the numbers for each type.</span></div>
+</main>
+</div>
+</body>
+</html>
