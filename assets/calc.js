@@ -118,25 +118,38 @@
   /* ---------- 二参数区域 ---------- */
   const REGION_PRESETS = {
     hw322: { e: 's*(1+t*s)*(1+2*s)+K*(s+2)', x: 'K', x0: 0, x1: 5, y: 't', y0: 0, y1: 6, curve: (K) => (K > 1 / 3 ? (2 * (1 + K)) / (3 * K - 1) : NaN), note: ['边界 τ = 2(1+K)/(3K−1)（红色虚线）；渐近线 K = 1/3、τ = 2/3。', 'Boundary τ = 2(1+K)/(3K−1) (red dashed); asymptotes K = 1/3, τ = 2/3.'] },
+    ka: { e: 's*(s+1)*(s+a)+K', x: 'a', x0: 0, x1: 5, y: 'K', y0: 0, y1: 25, curve: (a) => a * (1 + a), note: ['L = K/(s(s+1)(s+a))：c = s³+(1+a)s²+as+K，稳定 ⟺ a > 0, K > 0, K < a(1+a)（红色虚线）。', 'L = K/(s(s+1)(s+a)): c = s³+(1+a)s²+as+K, stable ⟺ a > 0, K > 0, K < a(1+a) (red dashed).'] },
+    pd: { e: 's*(s+1)*(s+2)+10*(KP+KD*s)', x: 'KD', x0: -0.5, x1: 2, y: 'KP', y0: -0.5, y1: 8, curve: (KD) => 0.3 * (2 + 10 * KD), note: ['PD 控制：c = s³+3s²+(2+10K_D)s+10K_P，稳定 ⟺ K_P > 0 且 K_P < 0.3(2+10K_D)（红色虚线）。', 'PD control: c = s³+3s²+(2+10K_D)s+10K_P, stable ⟺ K_P > 0 and K_P < 0.3(2+10K_D) (red dashed).'] },
     pi: { e: 's*(s+1)*(s+2)+10*(KP*s+KI)', x: 'KI', x0: -0.5, x1: 2, y: 'KP', y0: -0.5, y1: 1.5, curve: (KI) => (KI > 0 ? KI / 3 - 0.2 : NaN), note: ['边界 K_P = K_I/3 − 0.2（红色虚线）与 K_I = 0。', 'Boundaries K_P = K_I/3 − 0.2 (red dashed) and K_I = 0.'] },
   };
   let regionCurve = null, regionNote = null;
+  function clearRegion() {
+    const cv = $('rg-canvas'), ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    cv.onmousemove = null; $('rg-read').textContent = '';
+  }
   function regionCalc() {
+    clearRegion(); // 先清空：出错时不能留着上一张图
     const src = $('rg-in').value, xn = $('rg-x').value.trim(), yn = $('rg-y').value.trim();
     const xr = [parseFloat($('rg-x0').value), parseFloat($('rg-x1').value)], yr = [parseFloat($('rg-y0').value), parseFloat($('rg-y1').value)];
-    if (!(xr[1] > xr[0]) || !(yr[1] > yr[0])) throw new Error(bi('范围不对', 'bad range'));
-    const sys = CM.compileNum(src);
-    const extra = sys.ids.filter((v) => v !== xn && v !== yn);
-    if (extra.length) throw new Error(bi('表达式里有未指定的参数：', 'unassigned parameters: ') + extra.join(', '));
+    if (!xn || !yn) throw new Error(bi('请填写横轴和纵轴的参数名', 'Enter the parameter names for both axes'));
+    if (CM.normName(xn) === CM.normName(yn)) throw new Error(bi('横轴和纵轴不能是同一个参数', 'The two axes must be different parameters'));
+    if ([xn, yn].some((v) => CM.normName(v) === 's')) throw new Error(bi('参数名不能是 s（s 是拉氏变量）', 'A parameter cannot be named s (the Laplace variable)'));
+    if (!(xr[1] > xr[0]) || !(yr[1] > yr[0])) throw new Error(bi('范围不对：右端要大于左端', 'Bad range: the upper end must exceed the lower end'));
+    const sys = CM.compileNum(src, [xn, yn]); // 只认这两个参数名，其它符号直接报错
+    const used = new Set(sys.ids);
     const cv = $('rg-canvas');
+    const label = (v) => (CM.normName(v) === 't' || CM.normName(v) === 'tau' ? 'τ' : v);
     const cnt = UI.regionPlot(cv, {
-      xr, yr, xl: xn, yl: yn === 't' ? 'τ' : yn, readout: $('rg-read'),
+      xr, yr, xl: label(xn), yl: label(yn), readout: $('rg-read'),
       f: (x, y) => CM.routhFloat(sys.f({ [xn]: x, [yn]: y })),
       curves: regionCurve ? [{ f: regionCurve }] : [],
     });
     let h = '';
+    const unused = [xn, yn].filter((v) => !used.has(CM.normName(v)));
+    if (unused.length) h += '<p class="small err">' + bi('注意：表达式里没有出现 ', 'Note: the expression does not contain ') + unused.join(', ') + bi('，这一轴方向上结果不变。', ' — the result is constant along that axis.') + '</p>';
     if (regionNote) h += '<p class="small">' + bi(regionNote[0], regionNote[1]) + '</p>';
-    h += '<p class="muted small">' + bi('网格中稳定格点数：', 'Stable grid cells: ') + cnt + bi('。把鼠标移到图上查看坐标与判定。', '. Hover over the plot to read values.') + '</p>';
+    h += '<p class="muted small">' + bi('绿色 = 稳定（每个格点都单独做一次 Routh）。网格中稳定格点数：', 'Green = stable (Routh test at every grid point). Stable grid cells: ') + cnt + bi('。把鼠标移到图上查看坐标与判定。', '. Hover over the plot to read values.') + '</p>';
     return h;
   }
 
@@ -335,8 +348,10 @@
   function bind() {
     $('routh-go').onclick = () => run('routh-out', routhCalc);
     document.querySelectorAll('[data-routh]').forEach((bt) => bt.onclick = () => { const [e, p] = bt.dataset.routh.split('|'); $('routh-in').value = e; $('routh-param').value = p || ''; run('routh-out', routhCalc); });
-    $('rg-go').onclick = () => { regionCurve = null; regionNote = null; run('rg-out', regionCalc); };
-    const loadRegion = (k) => { const p = REGION_PRESETS[k]; if (!p) return; $('rg-in').value = p.e; $('rg-x').value = p.x; $('rg-x0').value = p.x0; $('rg-x1').value = p.x1; $('rg-y').value = p.y; $('rg-y0').value = p.y0; $('rg-y1').value = p.y1; regionCurve = p.curve; regionNote = p.note; run('rg-out', regionCalc); };
+    let regionPreset = null;
+    const sameAsPreset = () => { const p = REGION_PRESETS[regionPreset]; return p && $('rg-in').value === p.e && $('rg-x').value.trim() === p.x && $('rg-y').value.trim() === p.y; };
+    $('rg-go').onclick = () => { if (!sameAsPreset()) { regionCurve = null; regionNote = null; regionPreset = null; } run('rg-out', regionCalc); };
+    const loadRegion = (k) => { const p = REGION_PRESETS[k]; if (!p) return; $('rg-in').value = p.e; $('rg-x').value = p.x; $('rg-x0').value = p.x0; $('rg-x1').value = p.x1; $('rg-y').value = p.y; $('rg-y0').value = p.y0; $('rg-y1').value = p.y1; regionCurve = p.curve; regionNote = p.note; regionPreset = k; run('rg-out', regionCalc); };
     document.querySelectorAll('[data-region]').forEach((bt) => bt.onclick = () => loadRegion(bt.dataset.region));
     $('kh-go').onclick = () => run('kh-out', kharCalc);
     document.querySelectorAll('[data-kh]').forEach((bt) => bt.onclick = () => { $('kh-in').value = bt.dataset.kh; run('kh-out', kharCalc); });

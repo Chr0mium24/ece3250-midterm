@@ -9,8 +9,8 @@
 <link rel="stylesheet" href="assets/style.css?v=4">
 <script defer src="assets/vendor/katex/katex.min.js"></script>
 <script defer src="assets/vendor/katex/auto-render.min.js"></script>
-<script defer src="assets/search-index.js?v=2"></script>
-<script defer src="assets/cmath.js?v=1"></script>
+<script defer src="assets/search-index.js?v=3"></script>
+<script defer src="assets/cmath.js?v=2"></script>
 <script defer src="assets/ui.js?v=3"></script>
 </head>
 <body>
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cv = document.getElementById('hw322plot');
   const draw = () => {
     if (!cv.offsetParent) return;
-    const sys = CM.compileNum('s*(1+t*s)*(1+2*s)+K*(s+2)');
+    const sys = CM.compileNum('s*(1+t*s)*(1+2*s)+K*(s+2)', ['K', 't']);
     UI.regionPlot(cv, {
       xr: [0, 5], yr: [0, 6], xl: 'K', yl: 'τ', readout: document.getElementById('hw322read'),
       f: (K, t) => t > 0 && CM.routhFloat(sys.f({ K, t })),

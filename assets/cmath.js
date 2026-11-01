@@ -295,12 +295,15 @@
   }
 
   /* ---------------- 表达式解析 ---------------- */
-  const MULTI = ['KP', 'KI', 'KD', 'Kp', 'Ki', 'Kd', 'tau', 'Mp', 'Mc', 'Ra', 'La', 'Kf'];
-  function tokenize(src) {
+  // 标识符切词：一串字母数字（如 KCs、2Ks 里的 Ks）按“已声明的名字 + s”做最长匹配拆开，
+  // 这样 Ks = K·s，而声明过的 KC 不会被拆成 K·C。known = 允许出现的参数名（不含 s）。
+  const normName = (v) => String(v).replace(/τ/g, 'tau').replace(/_/g, '');
+  function tokenize(src, known = [], svar = 's') {
     let s = String(src)
       .replace(/[−–—]/g, '-').replace(/[·×∙]/g, '*').replace(/÷/g, '/')
       .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/⁵/g, '^5')
       .replace(/\*\*/g, '^');
+    const names = [...new Set([svar, ...known.map(normName)])].filter(Boolean).sort((a, b) => b.length - a.length);
     const toks = []; let i = 0;
     while (i < s.length) {
       const ch = s[i];
@@ -310,19 +313,29 @@
         toks.push({ t: 'num', v: m[0] }); i += m[0].length; continue;
       }
       if ('+-*/^()'.includes(ch)) { toks.push({ t: ch }); i++; continue; }
-      if (/[A-Za-zα-ωΑ-Ω]/.test(ch)) {
-        const rest = s.slice(i);
-        let name = null;
-        for (const mname of MULTI) if (rest.startsWith(mname) && !/^[0-9_]/.test(rest.slice(mname.length))) { name = mname; break; }
-        if (!name) { const m = /^[A-Za-zα-ωΑ-Ω](_?\d+)?/.exec(rest); name = m[0]; }
-        toks.push({ t: 'id', v: name.replace('_', '') }); i += name.length; continue;
+      if (/[A-Za-zα-ωΑ-Ω_]/.test(ch)) {
+        const raw = /^[A-Za-zα-ωΑ-Ω_][A-Za-zα-ωΑ-Ω0-9_]*/.exec(s.slice(i))[0];
+        const run = normName(raw);
+        let k = 0;
+        while (k < run.length) {
+          const dm = /^\d+/.exec(run.slice(k));
+          if (dm) { toks.push({ t: 'num', v: dm[0] }); k += dm[0].length; continue; }
+          const hit = names.find((nm) => run.startsWith(nm, k));
+          if (!hit) {
+            const decl = names.filter((nm) => nm !== svar);
+            throw new Error('未知符号 “' + raw + '”' + (decl.length ? '，参数名要和填写的一致（' + decl.join(', ') + '）' : '，这里只允许 ' + svar)
+              + ' / unknown symbol “' + raw + '”' + (decl.length ? ' — parameter names must match the declared ones (' + decl.join(', ') + ')' : ' — only ' + svar + ' is allowed here'));
+          }
+          toks.push({ t: 'id', v: hit }); k += hit.length;
+        }
+        i += raw.length; continue;
       }
       throw new Error('无法识别的字符 / unexpected character: ' + ch);
     }
     return toks;
   }
-  function parse(src) {
-    const toks = tokenize(src); let p = 0;
+  function parse(src, known = [], svar = 's') {
+    const toks = tokenize(src, known, svar); let p = 0;
     const peek = () => toks[p], eat = (t) => { if (!toks[p] || toks[p].t !== t) throw new Error('表达式语法错误 / syntax error (expected ' + t + '）'); return toks[p++]; };
     function expr() {
       let n = term();
@@ -398,7 +411,7 @@
       case 'num': return SK.trim([P.const(Q.parse(tree.v))]);
       case 'id':
         if (tree.v === svar) return [[], [Q.ONE]];
-        if (param && tree.v === param) return [[Q.ZERO, Q.ONE]];
+        if (param && tree.v === normName(param)) return [[Q.ZERO, Q.ONE]];
         throw new Error('未知符号 / unknown symbol “' + tree.v + '”' + (param ? '' : '（只允许 ' + svar + '）/ only ' + svar + ' allowed'));
       case 'neg': return SK.neg(evalSK(tree.a, param, svar));
       case '+': return SK.add(evalSK(tree.a, param, svar), evalSK(tree.b, param, svar));
@@ -416,17 +429,17 @@
   }
   // 解析为 s 的有理系数多项式（升幂）
   function polyS(src, svar = 's') {
-    const sk = evalSK(parse(src), null, svar);
+    const sk = evalSK(parse(src, [], svar), null, svar);
     return P.trim(sk.map((k) => (P.trim(k)[0] || Q.ZERO)));
   }
   // 解析为 s 的多项式，系数为 K 的多项式（降幂外层，便于 Routh）
   function polySK(src, param) {
-    const sk = evalSK(parse(src), param);
-    return sk;
+    if (!param || normName(param) === 's') throw new Error('参数名不能为空，也不能是 s / parameter name must be non-empty and not s');
+    return evalSK(parse(src, [param]), param);
   }
   // 浮点求值（二维稳定区域用）：编译成函数 env → 降幂浮点系数
-  function compileNum(src, svar = 's') {
-    const tree = parse(src);
+  function compileNum(src, names = [], svar = 's') {
+    const tree = parse(src, names, svar);
     const addA = (a, b) => { const n = Math.max(a.length, b.length), r = new Array(n).fill(0); for (let i = 0; i < n; i++) r[i] = (a[i] || 0) + (b[i] || 0); return r; };
     const mulA = (a, b) => { const r = new Array(a.length + b.length - 1).fill(0); for (let i = 0; i < a.length; i++) for (let j = 0; j < b.length; j++) r[i + j] += a[i] * b[j]; return r; };
     function ev(t, env) {
@@ -442,7 +455,7 @@
       }
     }
     const ids = [...idsIn(tree)].filter((v) => v !== svar);
-    return { ids, f: (env) => { const a = ev(tree, env); let i = a.length; while (i > 1 && a[i - 1] === 0) i--; return a.slice(0, i).reverse(); } };
+    return { ids, f: (env0) => { const env = {}; for (const k in env0) env[normName(k)] = env0[k]; const a = ev(tree, env); let i = a.length; while (i > 1 && a[i - 1] === 0) i--; return a.slice(0, i).reverse(); } };
   }
 
   /* ---------------- Routh 表（课程版本） ---------------- */
@@ -918,7 +931,7 @@
 
   /* ---------------- 导出 ---------------- */
   const CM = {
-    Q, P, RF, SK, C, parse, polyS, polySK, compileNum, idsIn,
+    Q, P, RF, SK, C, parse, normName, polyS, polySK, compileNum, idsIn,
     routhQ, routhFloat, routhParam, kharitonov, KH_PAT, solveQ, polesToPoly, toeplitz, polePlace,
     parseMatrix, Mx, ss2tf, realizations, matTeX, partialFractions, pfTeX,
     rootsNum, rootsTeX, rootTeX, sortRoots, realRootsExact, rootsExact, rootsQ, rootsExactTeX,

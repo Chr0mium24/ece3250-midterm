@@ -9,10 +9,10 @@
 <link rel="stylesheet" href="assets/style.css?v=4">
 <script defer src="assets/vendor/katex/katex.min.js"></script>
 <script defer src="assets/vendor/katex/auto-render.min.js"></script>
-<script defer src="assets/search-index.js?v=2"></script>
-<script defer src="assets/cmath.js?v=1"></script>
+<script defer src="assets/search-index.js?v=3"></script>
+<script defer src="assets/cmath.js?v=2"></script>
 <script defer src="assets/ui.js?v=3"></script>
-<script defer src="assets/calc.js?v=1"></script>
+<script defer src="assets/calc.js?v=2"></script>
 </head>
 <body>
 <header id="topnav"></header>
@@ -33,7 +33,7 @@
 <!-- ① Routh -->
 <section class="calc" id="routh-sec">
 <h2 id="routh" data-kw="routh table calculator parameter K range stability polynomial">① <span class="zh">Routh 表 &amp; 含参数稳定范围</span><span class="en">Routh table &amp; parametric stability range</span></h2>
-<p class="muted small"><span class="zh">参数名留空 = 纯数值多项式；填了参数名（如 K）就按课件公式符号化推 Routh 表，并解出稳定的参数区间。</span><span class="en">Leave the parameter blank for a numeric polynomial; with a parameter name (e.g. K) the table is built symbolically and the stable parameter intervals are solved.</span></p>
+<p class="muted small"><span class="zh">参数名留空 = 纯数值多项式；填了参数名（任意名字，如 K、KC、a，要和表达式里一致）就按课件公式符号化推 Routh 表，并解出稳定的参数区间。</span><span class="en">Leave the parameter blank for a numeric polynomial; with a parameter name (any name such as K, KC or a, matching the expression) the table is built symbolically and the stable parameter intervals are solved.</span></p>
 <div class="presets"><span><span class="zh">例题：</span><span class="en">Examples:</span></span>
 <button data-routh="s^4+10s^3+35s^2+50s+24|">L10 ex1</button>
 <button data-routh="s^3+2s^2+3s+10|">L10 −2</button>
@@ -56,8 +56,8 @@
 <!-- ② region -->
 <section class="calc" id="region-sec">
 <h2 id="region" data-kw="two parameter stability region plot pi controller tau K plane">② <span class="zh">二参数稳定区域</span><span class="en">Two-parameter stability region</span></h2>
-<p class="muted small"><span class="zh">输入闭环特征多项式（含两个参数），在网格上逐点做 Routh，绿色为稳定。</span><span class="en">Enter the closed-loop characteristic polynomial with two parameters; Routh is run at every grid point, green = stable.</span></p>
-<div class="presets"><span><span class="zh">例题：</span><span class="en">Examples:</span></span><button data-region="hw322">HW2 3.22 (K, τ)</button><button data-region="pi">L11 PI (K_I, K_P)</button></div>
+<p class="muted small"><span class="zh">输入任意含两个参数的闭环特征多项式（不限于下面的例题），在横轴、纵轴填这两个参数的名字和范围。参数名可以任取（如 <code>KC</code>、<code>KI</code>、<code>a</code>、<code>t</code>/<code>τ</code>、<code>K_1</code>），但必须和表达式里写的一致；其它常数请直接代入数值。程序在网格上逐点做 Routh，绿色为稳定。</span><span class="en">Enter any closed-loop characteristic polynomial with two parameters (not just the examples) and give their names and ranges on the two axes. Names are free (<code>KC</code>, <code>KI</code>, <code>a</code>, <code>t</code>/<code>τ</code>, <code>K_1</code>…) but must match the expression; substitute all other constants as numbers. Routh is run at every grid point, green = stable.</span></p>
+<div class="presets"><span><span class="zh">例题：</span><span class="en">Examples:</span></span><button data-region="hw322">HW2 3.22 (K, τ)</button><button data-region="pi">L11 PI (K_I, K_P)</button><button data-region="pd">PD (K_D, K_P)</button><button data-region="ka">K/(s(s+1)(s+a)) (a, K)</button></div>
 <div class="form">
 <label for="rg-in">c(s) =</label><input type="text" id="rg-in" value="s*(1+t*s)*(1+2*s)+K*(s+2)">
 <label><span class="zh">横轴</span><span class="en">x-axis</span></label><div class="row"><input type="text" id="rg-x" class="short" value="K"><input type="text" id="rg-x0" class="short" value="0"><span>→</span><input type="text" id="rg-x1" class="short" value="5"></div>
